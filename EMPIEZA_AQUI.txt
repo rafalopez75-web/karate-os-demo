@@ -1,0 +1,14 @@
+KARATE OS · PRUEBA PARA CLIENTE
+
+1. Extrae el ZIP completo y abre index.html con un navegador moderno.
+2. La web comercial abre la copia del portal incluida en el ZIP.
+3. Presentacion_Karate_OS.pdf incluye cuatro diapositivas para la reunión.
+
+Accesos ficticios. Contraseña de las tres cuentas: Demo1234.
+- Alumna competidora: Dojo Go-Kan, adulto@example.com
+- Administración: Centro de control, Dojo Go-Kan, admin@example.com
+- Presidencia IFK: Centro de control, Tineo Dojo, ifk@example.com
+
+Guion rápido: enseña la ficha y el horario de un alumno. Desde Tineo Dojo crea un evento IFK con fecha futura. Cambia a Go-Kan y publícalo desde Eventos federativos. En el portal de la alumna, abre Próximos eventos y solicita participar en una modalidad.
+
+La prueba utiliza datos ficticios y guarda los eventos federativos en el navegador. El formulario de alta conectado a la base de datos pertenece a la web en línea.

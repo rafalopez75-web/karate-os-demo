@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="es">
+<head>
+<!-- Karate OS · © 2026 Karate OS. Todos los derechos reservados. -->
+<meta charset="utf-8">
+<link rel="icon" href="../icono.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon.png" type="image/png" sizes="64x64">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<meta name="theme-color" content="#090b0d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Karate OS">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KARATE OS · Portal del dojo</title>
+<style>
+@font-face{font-family:"Noto Sans Portal";src:url("fonts/NotoSans-Regular.woff") format("woff");font-weight:400;font-display:swap}
+@font-face{font-family:"Noto Sans Portal";src:url("fonts/NotoSans-Bold.woff") format("woff");font-weight:700;font-display:swap}
+*{box-sizing:border-box}body{margin:0;background:#090b0d;color:#f5f5f5;font:16px "Noto Sans Portal",system-ui;color-scheme:dark}header,main{max-width:1050px;margin:auto;padding:24px}header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #333}.brand{display:block;width:clamp(130px,45vw,226px);height:auto;max-width:100%}header{gap:12px}header span{text-align:right;font-size:clamp(12px,3.5vw,16px)}h1,h2{margin:0 0 12px}p{color:#c3c6cb}section,article{background:#14171b;border:1px solid #32353a;border-radius:14px;padding:20px;margin:0 0 16px}#login{max-width:480px;margin:24px auto}label{display:grid;gap:5px;margin:10px 0}input,select,textarea,button{font:inherit;color:inherit;border-radius:8px;padding:10px;border:1px solid #474a51;background:#1e2227;min-width:0}textarea{min-height:75px}button{cursor:pointer;font-weight:700}button.primary{background:#b91523;border-color:#df3440}nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}nav [aria-pressed=true]{border-color:#ff5962;color:#ffadb0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:0 14px}ul{padding:0;list-style:none}li{border-top:1px solid #393d42;padding:12px 0;overflow-wrap:anywhere}li button{margin-left:8px}a{color:#ffadb0}[hidden]{display:none!important}:focus-visible{outline:2px solid #ff858b;outline-offset:2px}
+
+.dojo-picker-art{display:block;width:min(100%,250px);height:auto;margin:0 auto 14px}
+#login.login-choosing{background:radial-gradient(ellipse at 50% 27%,#351419,#14171b 62%)}
+.directory-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.directory-heading h2{margin:0}
+.directory-filters{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;margin-top:12px}
+.student-list{margin:0;border:1px solid #393d42;border-radius:12px;overflow:hidden}
+.student-list li{padding:0;border:0}
+.student-list li+li{border-top:1px solid #393d42}
+.student-row{border:0;border-radius:0;background:#171b20;width:100%;text-align:left;display:grid;grid-template-columns:44px minmax(0,1fr) auto 14px;align-items:center;gap:12px;padding:14px;font-weight:500}
+.student-row:hover{background:#22272e}
+.student-row:focus-visible{outline-offset:-3px}
+.student-row strong{display:block;font-size:16px;overflow-wrap:anywhere}
+.student-row small{display:block;color:#c3c6cb;margin-top:3px}
+.student-avatar{display:grid;place-items:center;background:#3a2027;color:#ffb7bf;width:44px;height:44px;border-radius:50%;font-weight:800;object-fit:cover}
+.student-state{font-size:12px;background:#283037;padding:4px 8px;border-radius:20px}
+.profile-heading{display:flex;align-items:center;gap:12px;margin:16px 0}
+.profile-heading h2{margin:0}.profile-heading-details{display:flex;align-items:center;flex-wrap:wrap;gap:8px 13px}.profile-heading-details .license-status{font-size:12px}
+.profile-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(175px,100%),1fr));gap:14px;margin:0}
+.profile-fields dt{font-size:13px;color:#bfc3ca}
+.profile-fields dd{margin:4px 0 0;overflow-wrap:anywhere;white-space:pre-wrap}
+@media(max-width:420px){.student-row{grid-template-columns:36px minmax(0,1fr) auto 8px;gap:7px;padding:11px 8px}.student-row .student-avatar{width:36px;height:36px}.student-state{padding:3px 5px}}
+#student-editor{max-width:min(720px,calc(100% - 24px));width:100%;border:1px solid #474a51;border-radius:14px;padding:20px;background:#14171b;color:inherit}
+#student-editor::backdrop{background:#000a}
+@media(max-width:570px){.directory-filters{grid-template-columns:1fr 1fr}.directory-filters label:first-child{grid-column:1/-1}}
+.grade-belt{display:inline-flex;justify-content:flex-end;gap:2px;width:66px;height:12px;border:1px solid #777;border-radius:3px;vertical-align:middle;margin-right:8px;padding-right:4px}.grade-belt i{width:2px}
+
+.achievement-hero{display:grid;grid-template-columns: minmax(0,1fr) minmax(0,1.3fr);align-items:center;gap:18px;min-height:240px;background:radial-gradient(ellipse at 78% 65%,var(--belt-glow,#f0782333),transparent 53%),linear-gradient(135deg,#191b20,#101216);overflow:hidden}
+.achievement-hero h3{font-size:clamp(32px,6vw,60px);letter-spacing:-.06em;line-height:.95;margin:12px 0}
+.achievement-hero small{color:#ffb2b7;font-weight:750;letter-spacing:.09em}
+.achievement-hero img{width:100%;max-height:280px;object-fit:contain;filter:var(--belt-filter,none) drop-shadow(0 12px 18px #0008)}
+.achievement-exam{padding:14px 0;border-top:1px solid #393d42;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.achievement-exam p{margin:5px 0}.achievement-exam strong{display:block}.achievement-actions{display:flex;gap:8px;flex-wrap:wrap}
+#certificate-dialog{max-width:min(650px,calc(100% - 24px));width:100%;border:0;border-radius:12px;padding:18px;background:#1a1c20}
+#certificate-dialog::backdrop{background:#000a}
+.certificate-paper{background:#fff9ed;color:#251b17;border:5px double #9c392a;border-radius:0;text-align:center;padding:32px 16px}
+.certificate-paper p{color:#49352e}.certificate-paper strong{font-family:Georgia,serif;font-size:clamp(24px,5vw,42px)}
+@media(max-width:600px){.achievement-hero{grid-template-columns:1fr;gap:0}.achievement-hero img{max-height:195px}}
+@media print{body.printing-certificate>header,body.printing-certificate>main,.certificate-controls{display:none!important}body.printing-certificate{background:white}#certificate-dialog[open]{position:static;max-width:none;width:100%;margin:0;padding:0;background:white;color:black}#certificate-dialog::backdrop{display:none}}
+
+#group-schedule{color:#ffb0b6;font-size:13px}
+#mandate-dialog{width:min(720px,calc(100% - 24px));max-width:none;border:0;background:#1a1c20;padding:16px;border-radius:12px}
+.mandate-paper{background:#fff;color:#171717;border:1px solid #aaa;padding:22px}.home-today h3{margin-top:0}.home-today-list{margin:6px 0;padding-left:18px;display:grid;gap:4px}.shop-ticket{margin:6px 0;padding-left:18px;display:grid;gap:6px}.shop-total{font-weight:800;font-size:18px}.shop-number{max-width:90px}a.button{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:8px 14px;border:1px solid #3a3f46;border-radius:8px;background:#1b1f24;color:#fff;font-weight:700;text-decoration:none}a.button.primary{background:#c8102e;border-color:#c8102e}a.button[hidden]{display:none}#reminder-dialog{max-width:560px;width:calc(100% - 32px)}#reminder-dialog textarea{width:100%}.fee-reminder-notice ul{margin:4px 0;padding-left:18px}.fees-remittances{margin:10px 0;padding:8px 12px;border-left:3px solid #b7791f;background:#2a2214}.fees-remittances p{margin:4px 0}.kos-update{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0;padding:10px 14px;border:1px solid #2e5a8a;border-radius:10px;background:#0f1c2a;color:#cfe3ff}.kos-update button{min-height:0;padding:6px 12px}.kos-release ul{margin:6px 0;padding-left:18px;display:grid;gap:6px}.kos-tag{display:inline-block;padding:1px 8px;border-radius:9px;font-size:12px;font-weight:700;background:#2a2f36}.kos-tag.is-nuevo{background:#1f4d2e;color:#a6f0bf}.kos-tag.is-mejorado{background:#1d3a5c;color:#b9d8ff}.kos-tag.is-corregido{background:#4d3a1f;color:#ffd9a0}.kos-faq-item{border-top:1px solid #2c3036;padding:8px 0}.kos-faq-item summary{cursor:pointer;font-weight:700}.kos-list{margin:6px 0;padding-left:18px;display:grid;gap:6px}.kos-plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}.kos-plan.is-current{border-color:#c8102e}.kos-price{font-size:26px;font-weight:800;margin:4px 0}.kos-paid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}.kos-feature{border:1px solid #2c3036;border-radius:10px;padding:12px}.kos-feature h4{margin:0 0 4px}.support-request.is-pending{border-color:#2e5a8a}.support-request.is-active{border-color:#b7791f}.support-reason{font-style:italic}.support-preview{display:grid;gap:10px;margin-top:8px}.support-preview h4{margin:6px 0 4px}.support-preview table{width:100%;border-collapse:collapse;font-size:14px}.support-preview th,.support-preview td{text-align:left;padding:4px 6px;border-bottom:1px solid #2c3036}.quick-tutor{display:grid;gap:8px}.quick-tutor>button{justify-self:start}.qr-roster .qr-state{min-height:0;padding:3px 10px;font-size:13px;font-weight:700}.qr-roster .qr-state.is-present{color:#9be7b0;border-color:#2e7a4a}.qr-roster .qr-state.is-absent{color:#ffb4a6;border-color:#7a3b2e}.annual-fee-notice h4{margin:0 0 4px}.license-warning,.plan-warning{margin:6px 0;padding:6px 10px;border-left:3px solid #c8102e;background:#2a1414;color:#ffb4a6}.mandate-warning{margin:0 0 10px;padding:8px 12px;border-left:3px solid #c8102e;background:#2a1414;color:#ffb4a6}
+.mandate-paper p{color:#222}.mandate-paper article{background:#fff;border-color:#aaa;color:#171717;break-inside:avoid}.mandate-paper dt{color:#444}
+@media print{body.printing-mandate>header,body.printing-mandate>main,.mandate-controls{display:none!important}body.printing-mandate{background:#fff}#mandate-dialog[open]{position:static;width:100%;max-width:none;margin:0;padding:0;background:white;color:black}#mandate-dialog::backdrop{display:none}}
+
+.learner-layout{display:grid;grid-template-columns:205px minmax(0,1fr);gap:16px}
+.learner-nav{align-content:start;display:grid;gap:7px;margin:0}
+.learner-nav button{text-align:left}
+.competition-nav-button img{width:22px;height:1em;object-fit:contain;margin-inline-end:8px;vertical-align:-.13em;transform:scale(1.2)}
+.learner-pane{min-width:0}
+.learner-pane .achievement-hero h3{font-size:clamp(30px,5vw,52px)}
+.learner-recommendation{border-left:3px solid #ff535e}
+.learner-pane label,.learner-pane textarea{width:100%}
+.learner-event+.learner-event{border-top:1px solid #393d42;padding-top:10px}
+@media(max-width:640px){.learner-layout{grid-template-columns:minmax(0,1fr)}.learner-nav{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr))}.learner-nav button{text-align:center}}
+
+.exam-breakdown{flex:0 0 100%;padding:9px 0}.exam-breakdown summary{cursor:pointer;color:#ffadb0}
+.exam-breakdown article{margin:9px 0 0}.championship-row{display:flex;align-items:center;gap:14px;padding:14px 0;border-top:1px solid #393d42}
+.championship-row p{margin:4px 0}.championship-icon{display:grid;place-items:center;flex:0 0 52px;height:52px;border-radius:12px;background:#34291d;font-size:27px}
+
+.appointment-date{display:inline-flex;align-items:center;gap:8px;color:#e6e8eb}
+.appointment-date{position:relative;padding-left:34px;min-height:30px}
+.appointment-date::before,.appointment-date::after{content:"";position:absolute;pointer-events:none}
+.appointment-date::before{width:24px;height:22px;left:1px;top:50%;transform:translateY(-45%);box-sizing:border-box;border:2px solid #ff2734;border-top-width:6px;border-radius:4px;background:radial-gradient(circle,#ff2734 1.3px,transparent 1.6px) 1px 1px/6px 6px}
+.appointment-date::after{height:7px;width:3px;border-radius:2px;background:#ff2734;left:7px;top:calc(50% - 13px);box-shadow:10px 0 #ff2734}
+.appointment-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.eligibility-badge{display:inline-block;border:1px solid #427c58;background:#173526;color:#a6e7b7;padding:6px 10px;border-radius:8px;font-weight:750}
+#stage-dialog{width:min(610px,calc(100% - 26px));padding:20px;border-radius:14px;border:1px solid #454b52;background:#14171b;color:inherit}
+#stage-dialog::backdrop{background:#000a}
+
+.agenda-section{padding:18px;background:#121518}
+.agenda-section>h3{margin:0 0 13px;font-size:15px;letter-spacing:.025em;color:#e9ebef}
+.agenda-item{padding:16px;border:1px solid #393d43;border-radius:12px;background:linear-gradient(135deg,#1b1d22,#131619 74%);border-left:2px solid #b92333}
+.agenda-item+.agenda-item{margin-top:10px}
+.agenda-head{display:grid;grid-template-columns:54px minmax(0,1fr);align-items:center;gap:12px}
+.agenda-tile{width:54px;height:54px;display:grid;place-items:center;border-radius:13px;background:linear-gradient(145deg,#451c23,#261217);border:1px solid #71303b}
+.agenda-tile .appointment-date{width:28px;padding-left:0}
+.agenda-tile .appointment-date::before{left:2px}
+.agenda-tile .appointment-date::after{left:8px}
+.agenda-head h4{margin:0;font-size:clamp(17px,3vw,23px);line-height:1.2;letter-spacing:-.025em;overflow-wrap:anywhere}
+.agenda-meta{display:flex;flex-wrap:wrap;gap:5px 14px;margin:5px 0 0}
+.agenda-meta li{padding:0;border:0;color:#c6c9ce;font-size:13px}
+.agenda-meta li+li::before{content:"·";color:#fe5965;margin-right:9px}
+.agenda-description{margin:14px 0 0;padding:10px 12px;border-radius:8px;background:#101317;color:#d1d4da;white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;line-height:1.55}
+.agenda-facts{grid-template-columns:repeat(auto-fit,minmax(min(145px,100%),1fr));margin-top:14px}
+.agenda-footer{border-top:1px solid #36393f;margin-top:14px;padding-top:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.agenda-footer p{margin:0;font-size:13px}.agenda-footer p+p{margin-top:5px}
+.agenda-footer button{margin-left:auto}
+@media(max-width:410px){.agenda-section{padding:12px}.agenda-item{padding:12px}.agenda-footer button{width:100%;margin-left:0}}
+
+.teacher-footer{display:grid;grid-template-columns:46px minmax(0,1fr) auto;align-items:center;gap:14px;margin-top:24px;padding:18px;border:1px solid #715936;border-radius:14px;background:radial-gradient(ellipse at top left,#34271b,#191817 70%);color:#fff3d8}
+.teacher-footer h3{margin:0;font-size:18px;color:#f3d393}
+.teacher-footer p{margin:5px 0 0;color:#d9cbb6;font-size:14px;line-height:1.45}
+.teacher-footer-icon{width:46px;height:46px;border:1px solid #715936;border-radius:12px;background:#3d2d1c;display:grid;place-items:center;position:relative;color:#f3ce84}
+.teacher-footer-icon::before{content:"";width:20px;height:14px;border:2px solid currentColor;border-radius:5px}
+.teacher-footer-icon::after{content:"";position:absolute;left:14px;top:28px;width:6px;height:6px;border-left:2px solid currentColor;border-bottom:2px solid currentColor;background:#3d2d1c;transform:skewY(-24deg)}
+.teacher-footer-action{background:#e7bf77;border-color:#f0d097;color:#2b1d10}
+.teacher-footer-action:hover{background:#f1d28f}
+.teacher-footer-action:focus-visible{outline-color:#f1d28f}
+@media(max-width:580px){.teacher-footer{grid-template-columns:46px minmax(0,1fr)}.teacher-footer-action{grid-column:1/-1}}
+
+.event-authorization-paper{display:none}
+.authorization-letterhead{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:14px}
+.authorization-letterhead h1{font-size:23px;margin:0}
+.authorization-letterhead img{width:140px;max-width:32%;height:auto;object-fit:contain}
+@media print{
+  body.printing-event-authorization{background:#fff;color:#111;color-scheme:light}
+  body.printing-event-authorization>header,body.printing-event-authorization>main,body.printing-event-authorization>#stage-dialog>:not(.event-authorization-paper){display:none!important}
+  body.printing-event-authorization #stage-dialog[open]{position:static;width:100%;max-width:none;max-height:none;overflow:visible;margin:0;padding:0;border:0;background:white;color:#111}
+  body.printing-event-authorization #stage-dialog::backdrop{display:none}
+  body.printing-event-authorization .event-authorization-paper{display:block;border:0;padding:14mm;background:white;color:#111}
+  .event-authorization-paper article{background:white;color:#111;border-color:#bbb;break-inside:avoid}
+  .event-authorization-paper p,.event-authorization-paper dt{color:#272727}
+}
+
+.guardian-note{padding:11px 13px;border-left:3px solid #e3b96a;border-radius:5px;background:#24201a;color:#eee0c7;font-size:14px}
+.student-row .guardian-line{color:#edce93}
+
+.license-status{display:inline-block;padding:5px 10px;border:1px solid #80643c;border-radius:8px;background:#302518;color:#f4d19b;font-weight:700}
+.license-status.is-paid{border-color:#437b59;background:#173426;color:#a6e7b7}
+
+.learner-welcome{position:relative;isolation:isolate;min-height:clamp(235px,48vw,370px);display:flex;align-items:flex-end;overflow:hidden;background:#080b0d;border-color:#3d3539;padding:clamp(15px,4vw,28px)}
+.learner-welcome-art{position:absolute;inset:0 0 0 auto;width:83%;height:100%;object-fit:contain;object-position:right center;z-index:-2}
+.learner-welcome::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#090b0e 0%,#090b0eaa 33%,transparent 73%),linear-gradient(0deg,#090b0eaa,transparent 42%);z-index:-1}
+.learner-welcome-copy{display:grid;gap:8px}
+.welcome-dojo-logo{display:block;width:clamp(115px,27vw,190px);height:auto;max-width:100%;padding:6px 8px;background:#fff;border-radius:7px;margin-bottom:5px;box-shadow:0 5px 14px #0007}
+.learner-welcome h3{margin:0;font-size:clamp(21px,4.3vw,38px);line-height:1;letter-spacing:-.04em;color:#fff}
+
+.learner-welcome .brush-motto{margin:2px 0 0;width:clamp(134px,31vw,226px);max-width:100%;line-height:0}
+.brush-motto{mix-blend-mode:screen}.brush-motto img{display:block;width:100%;height:auto;filter:grayscale(1) invert(1) contrast(1.18)}
+.learner-welcome-tagline{color:#ff545e;font-size:12px;text-transform:uppercase;font-weight:800;letter-spacing:.04em}
+.home-notice{border-top:1px solid #373a41;padding-top:10px;margin-top:10px;color:#c7cad0}
+
+.qr-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(210px,.65fr);gap:16px}
+.qr-tile{text-align:center;border:1px solid #66313a;border-radius:12px;padding:12px;background:#22171c}
+.qr-tile img{display:block;width:min(210px,100%);height:auto;margin:0 auto 9px;border-radius:6px}
+.qr-tile output{font-size:20px;font-weight:750;letter-spacing:.12em}
+.qr-roster li{display:flex;justify-content:space-between;gap:8px}
+@media(max-width:650px){.qr-layout{grid-template-columns:1fr}}
+.portal-access{font:inherit;font-size:14px;text-align:right;color:#ffadb0}
+.control-portal>nav{display:grid;align-content:start;gap:7px}
+.control-portal nav button{text-align:left}
+.control-portal nav button[aria-pressed=true]{background:#352126}
+.control-portal>section{min-width:0}
+.event-poster{display:block;width:auto;max-width:100%;max-height:380px;border-radius:10px;margin:12px 0;object-fit:contain}
+.competitor-badge{justify-self:start;padding:6px 10px;border:1px solid #a8834a;border-radius:8px;background:#231b10;color:#ffda9b;font-size:13px}
+.competitor-tag{color:#ffd483;font-weight:700}
+@media(min-width:900px){
+  main:has(.control-portal:not([hidden])){max-width:1440px}
+  .control-portal{display:grid;grid-template-columns:220px minmax(0,1fr);gap:0 24px}
+  .control-portal>h1,.control-portal>p{grid-column:1/-1}
+  .control-portal>nav{grid-column:1;grid-row:3 / span 8;align-self:start;position:sticky;top:16px}
+  .control-portal>section,.control-portal>#management,.control-portal>details,.control-portal>#status,.control-portal>#exam-window-notice{grid-column:2;min-width:0}
+}
+@media(max-width:899px){.control-portal>nav{grid-template-columns:repeat(auto-fit,minmax(135px,1fr))}}
+#roster-tools{margin:14px 0}
+#remittance-dialog,#roster-dialog{width:min(640px,calc(100% - 24px));max-height:85vh;overflow:auto;border:1px solid #474a51;border-radius:14px;color:inherit;background:#14171b;padding:20px}
+#remittance-dialog::backdrop,#roster-dialog::backdrop{background:#000a}
+#roster-print-paper{display:none}
+@media print{
+  body.printing-roster>*{display:none!important}
+  body.printing-roster>#roster-print-paper{display:block!important;background:#fff;color:#111;font-size:10pt}
+  #roster-print-paper table{border-collapse:collapse;width:100%}
+  #roster-print-paper th,#roster-print-paper td{border:1px solid #555;padding:5px;text-align:left;overflow-wrap:anywhere}
+  #roster-print-paper tr{break-inside:avoid}
+}
+.class-day-options label{display:flex;align-items:center;gap:8px;margin:6px 0}
+.class-day-options input[type=checkbox]{width:auto}
+
+#portal nav button.ifk-unread {
+  border-color:#ffa471;
+  background:#54271f;
+  color:#fff4ee;
+  box-shadow:0 0 12px #ff875b65;
+  animation:ifk-glow 2.4s ease-in-out infinite alternate;
+}
+@keyframes ifk-glow {
+  from { box-shadow:0 0 5px #ff875b45; }
+  to { box-shadow:0 0 18px 3px #ff875ba0; }
+}
+@media(prefers-reduced-motion:reduce) {
+  #portal nav button.ifk-unread { animation:none; }
+}
+
+#federative-events { width: min(100%, 960px); margin-inline: auto; }
+#federative-list { display: grid; gap: 14px; }
+.federative-card.agenda-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(14px, 3vw, 28px);
+  margin-block: 0;
+}
+.federative-card.has-poster {
+  grid-template-columns: minmax(0, 1fr) minmax(105px, 27%);
+}
+.federative-card-info { min-width: 0; overflow-wrap: anywhere; }
+.federative-card-info > :last-child { margin-bottom: 0; }
+.event-poster.federative-poster {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 225px;
+  margin: 0;
+  justify-self: end;
+}
+@media (max-width: 540px) {
+  .federative-card.has-poster { grid-template-columns: minmax(0, 1fr); }
+  .event-poster.federative-poster { max-height: 185px; justify-self: center; }
+}
+.federative-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+
+.learner-event-fold { margin: 10px 0; }
+.learner-event-fold > summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 12px;
+  border: 1px solid #413237;
+  border-radius: 10px;
+  background: #201719;
+  cursor: pointer;
+}
+.learner-event-fold > summary::-webkit-details-marker { display: none; }
+.learner-event-fold > summary::marker { content: ""; }
+.learner-event-fold-text { display: grid; gap: 3px; min-width: 0; overflow-wrap: anywhere; }
+.learner-event-fold-text small { color: #dfc2b9; }
+.learner-event-fold-action { margin-left: auto; color: #ffc3b5; font-size: .85rem; white-space: nowrap; }
+.learner-event-thumb { width: 46px; height: 56px; object-fit: contain; flex: none; border-radius: 5px; }
+.learner-event-fold[open] .learner-event-thumb { display: none; }
+.learner-event-fold > .agenda-item { margin-top: 7px; }
+
+#login.login-choosing { overflow:hidden; background:#14171b; }
+#login .dojo-picker-art {
+  width:100%; height:clamp(218px,42vw,485px);
+  object-fit:cover; object-position:center 37%;
+  margin:0 0 20px; border-radius:12px;
+  mask-image:linear-gradient(#000 84%, transparent);
+}
+@media(max-width:550px) {
+  #login .dojo-picker-art { height:auto; aspect-ratio:1.53; margin-bottom:12px; }
+}
+.demo-reset{display:block;margin:18px auto 0;padding:6px 10px;border:0;background:none;color:#9a918c;font-size:13px;text-decoration:underline;text-underline-offset:3px;cursor:pointer}.demo-reset:hover{color:#fff}
+.federative-actions label{display:inline-flex;align-items:center;gap:8px;margin:0 14px 0 0;padding:8px 12px;border:1px solid #474a51;border-radius:8px;cursor:pointer}.federative-actions label:has(input:checked){border-color:#c8102e;background:#c8102e1f}.federative-actions input[type=checkbox]{width:18px;height:18px;margin:0;padding:0;accent-color:#c8102e;flex:none}
+#roster-summary{font-weight:700}.roster-note{color:#a9a09b;font-size:13px}#roster-errors li{color:#ffb3a8}#roster-errors-title{color:#ff8b82;font-size:15px;margin:16px 0 4px}
+.dojo-card{border:1px solid #2c3036;border-radius:12px;padding:18px;margin:16px 0;background:#111418}
+.dojo-card h3{margin:0 0 10px}.dojo-lead,.dojo-help{color:#a9a3a0;font-size:14px;margin:4px 0 12px}
+.dojo-list{list-style:none;padding:0;margin:0 0 14px;display:grid;gap:8px}
+.dojo-list li,.dojo-steps li{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #2c3036;border-radius:9px}
+.dojo-list li span,.dojo-steps li span{flex:1;min-width:0}.dojo-list small,.dojo-steps small{color:#a9a3a0}
+.dojo-steps{list-style:none;padding:0;margin:14px 0 0;display:grid;gap:8px;counter-reset:paso}
+.dojo-steps li{counter-increment:paso}.dojo-steps li::before{content:counter(paso);display:grid;place-items:center;flex:none;width:28px;height:28px;border-radius:50%;border:1px solid #c8102e;color:#ff8b82;font-weight:800;font-size:13px}
+.dojo-steps li.is-done::before{content:"✓";background:#1f5130;border-color:#2e8a4d;color:#d6ffe3}
+.dojo-steps li span{display:grid}.dojo-progress{height:8px;border-radius:99px;background:#262a30;overflow:hidden}
+.dojo-progress::after{content:"";display:block;height:100%;width:var(--done);background:#c8102e}
+.dojo-inline{display:flex;flex-wrap:wrap;gap:10px;align-items:end}.dojo-inline label{flex:1 1 140px}
+#dojo-feedback{color:#ffb3a8;min-height:1.2em}
+.dojo-list li span{display:grid;gap:2px}.dojo-list li button,.dojo-steps li button{flex:none;width:auto}
+@media(max-width:600px){.dojo-list li,.dojo-steps li{flex-wrap:wrap}.dojo-list li span{flex:1 1 100%}.dojo-steps li span{flex:1 1 calc(100% - 40px)}.dojo-steps li button{margin-left:38px}}
+#student-editor{width:min(860px,calc(100% - 24px))}
+.form-intro{color:#a9a3a0;font-size:14px;margin:0 0 6px}
+.form-section{border:1px solid #2c3036;border-radius:12px;padding:6px 16px 14px;margin:14px 0}
+.form-section>legend{padding:0 8px;font-weight:800;color:#ff8b82;font-size:15px}
+.form-section .wide{grid-column:1/-1}
+.nav-group{display:contents}.nav-group-title{display:none}
+.control-portal .nav-group{display:grid;gap:7px;margin-top:10px}
+.control-portal .nav-group-title{display:block;font-size:11.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#ff8b82;padding:2px 2px 0}
+.control-portal .nav-group[hidden]{display:none}
+@media(max-width:899px){.control-portal .nav-group{grid-column:1/-1;grid-template-columns:repeat(auto-fit,minmax(135px,1fr))}.control-portal .nav-group-title{grid-column:1/-1}}
+.home-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:14px 0}
+.home-metric{border:1px solid #2c3036;border-radius:12px;padding:16px;background:#111418;display:grid;align-content:start;gap:4px}
+.home-metric h3{margin:0;font-size:14px;color:#c9c2bf;font-weight:700}
+.home-metric .home-value{margin:2px 0 4px;font-size:30px;font-weight:800;color:#fff;line-height:1.1}
+.home-metric .home-line{margin:0;color:#a9a3a0;font-size:13.5px}
+.home-metric button{justify-self:start;margin-top:10px}
+.home-metric.is-alert{border-color:#8c2b2f;background:#1d1214}.home-metric.is-alert .home-value{color:#ff8b82}
+.home-metric.is-warn{border-color:#80643c}.home-metric.is-warn .home-value{color:#f4d19b}
+.home-metric.is-ok .home-value{color:#a6e7b7}
+.home-setup{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;justify-content:space-between;border:1px solid #80643c;background:#211a12;border-radius:12px;padding:12px 16px}
+.home-setup p{margin:0}
+.home-gap{border-top:1px solid #2c3036;padding:8px 0}.home-gap summary{cursor:pointer;font-weight:700}
+.teacher-cards{display:grid;gap:4px}.teacher-card p{margin:6px 0}.teacher-card.has-warnings{border-color:#7a3b2e}.teacher-warnings{margin:8px 0 0;padding-left:18px;text-align:left;color:#ffb4a6}
+.doc-list{display:grid;gap:0}.doc-row{border-top:1px solid #2c3036;padding:10px 0}.doc-row h4{margin:0 0 2px}.notice-docs ul{margin:6px 0 0;padding-left:18px;display:grid;gap:4px}
+.question-card blockquote{margin:8px 0;padding:8px 12px;border-left:3px solid #2c3036;background:#0c0e11}.question-card.is-pending{border-color:#7a3b2e}.question-answer{margin:8px 0 2px;padding-left:12px;border-left:3px solid #2e7a4a}.nav-count{display:inline-block;margin-left:6px;min-width:18px;padding:0 6px;border-radius:9px;background:#c8102e;color:#fff;font-size:12px;line-height:18px;text-align:center}.nav-count:empty{display:none}
+.home-gap ul{margin:8px 0 4px;padding-left:18px;display:grid;gap:4px}
+.link-button{background:none;border:0;padding:0;color:#ffadb0;text-decoration:underline;text-underline-offset:3px;cursor:pointer;font:inherit}
+.export-bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:8px 0 14px}.export-bar span{color:#a9a3a0;font-size:14px}
+.exam-call-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}.exam-call-head h3{margin:0}.exam-call-head .export-bar{margin:0}
+.exam-call-summary{color:#d8cbc5;font-weight:700}.exam-call-warning{color:#f4d19b}
+.table-scroll{overflow-x:auto}.exam-table{width:100%;border-collapse:collapse;font-size:14px}
+.exam-table th{text-align:left;color:#a9a3a0;font-weight:700;padding:8px;border-bottom:1px solid #2c3036;white-space:nowrap}
+.exam-table td{padding:9px 8px;border-bottom:1px solid #22262b;vertical-align:top}
+.exam-table tr.is-muted td{color:#7f7a77}.exam-table .is-ok{color:#a6e7b7}.exam-table .is-warn{color:#f4d19b}.exam-table .is-low{color:#ff9d95}
+.exam-actions{white-space:nowrap}.exam-actions button{margin:0 6px 4px 0}
+#exam-call-feedback{margin-left:10px;color:#ffb3a8}
+.fees-controls{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:end}.fees-controls label{flex:1 1 170px}.fees-controls>button{flex:none;max-width:100%}
+.fees-totals{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:12px 0}
+.fees-total{border:1px solid #2c3036;border-radius:10px;padding:10px 12px;display:grid;gap:2px}
+.fees-total span{color:#a9a3a0;font-size:13px}.fees-total strong{font-size:20px}.fees-total small{color:#a9a3a0}
+.fees-total.is-ok strong{color:#a6e7b7}.fees-total.is-warn strong{color:#f4d19b}.fees-total.is-alert{border-color:#8c2b2f}.fees-total.is-alert strong{color:#ff8b82}
+.fees-bulk{display:flex;flex-wrap:wrap;align-items:end;gap:8px 10px;margin:14px 0 8px;padding:10px 12px;border:1px dashed #3a3f46;border-radius:10px}
+.fees-bulk span{font-weight:700;margin-right:6px;align-self:center}.fees-bulk label{flex:0 1 170px}
+.fees-table td:first-child,.fees-table th:first-child{width:32px}
+.fee-single{margin:8px 0 18px;border:1px solid #2c3036;border-radius:12px;padding:10px 16px}.fee-single summary{cursor:pointer;font-weight:700}
+#fees-feedback{color:#ffb3a8;min-height:1.2em}
+.access-invite{margin-top:12px;border:1px solid #2e8a4d;background:#122019;border-radius:10px;padding:12px 14px}
+.access-invite h4{margin:0 0 6px}.access-invite pre{white-space:pre-wrap;font-family:inherit;font-size:13.5px;line-height:1.5;background:#0c1410;border-radius:8px;padding:10px;margin:0 0 10px;color:#d6ffe3}
+.access-invite button,.access-invite .button-link{margin-right:8px}
+.button-link{display:inline-block;padding:9px 14px;border:1px solid #474a51;border-radius:8px;color:inherit;text-decoration:none}
+#access-feedback{color:#ffb3a8;min-height:1.2em}
+.tutor-children #tutor-children{display:grid;gap:6px;margin:6px 0}.tutor-children label{display:flex;gap:8px;align-items:center}.tutor-children input{width:auto}
+.grid-scroll{max-width:100%;overflow-x:auto}
+.attendance-grid{border-collapse:separate;border-spacing:0;font-size:13.5px;min-width:100%}
+.attendance-grid th,.attendance-grid td{border-bottom:1px solid #22262b;padding:6px 6px;text-align:center;white-space:nowrap}
+.attendance-grid thead th{vertical-align:bottom;color:#c9c2bf;font-weight:700}
+.attendance-grid thead th span{display:block}.attendance-grid thead th small{display:block;color:#8f8580;font-weight:400}
+.attendance-grid .sticky-col{position:sticky;left:0;background:#111418;text-align:left;z-index:1;min-width:150px;font-weight:700}
+.attendance-grid .is-future{color:#5d5855}
+.attendance-grid .is-off{color:#4a4542}
+.att-cell{width:34px;height:30px;padding:0;border-radius:7px;border:1px solid #3a3f46;background:#171b20;font-weight:800;font-size:15px}
+.att-cell.is-present,.att-key.is-present{background:#173426;border-color:#2e8a4d;color:#a6e7b7}
+.att-cell.is-absent,.att-key.is-absent{background:#341719;border-color:#8c2b2f;color:#ff9d95}
+.att-key{display:inline-block;padding:0 6px;border:1px solid;border-radius:5px}
+.grid-all{display:block;margin:4px auto 0;padding:3px 6px;font-size:11px;border-radius:6px;white-space:nowrap}
+.attendance-grid .att-total{font-weight:700}.attendance-grid .is-ok{color:#a6e7b7}.attendance-grid .is-low{color:#ff9d95}
+.attendance-grid tfoot th,.attendance-grid tfoot td{color:#a9a3a0;font-size:12.5px}
+#grid-feedback{color:#ffb3a8;min-height:1.2em}
+.notices-card .notice{border-top:1px solid #2c3036;padding:10px 0}
+.notice h4{margin:0 0 2px;font-size:15.5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.notice .notice-meta{margin:0 0 4px;color:#a9a3a0;font-size:12.5px}
+.notice.is-urgent{border-left:3px solid #c8102e;padding-left:10px}
+.notice.is-read{opacity:.72}
+.notice-badge{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:#c8102e;border-radius:5px;padding:2px 6px}
+#notice-list .notice{border-top:1px solid #2c3036;padding:12px 0}
+#notice-list .notice button{margin:6px 8px 0 0}
+#notice-feedback{color:#ffb3a8;min-height:1.2em}
+</style>
+</head>
+<body>
+<header><img class="brand" src="karate-os-wordmark.png" width="1960" height="208" alt="KARATE OS"><a id="portal-access" class="portal-access" href="?acceso=gestion">Centro de control</a></header>
+<main>
+<section id="login" class="login-choosing">
+<img id="dojo-picker-art" class="dojo-picker-art" src="acceso-kyokushin.webp" width="1080" height="790" alt="Karateka en el dojo junto al estandarte de Kyokushin">
+<h1 id="login-title">Elige tu dojo</h1>
+<div id="login-dojo-step">
+<label>Dojo<select id="login-dojo-select"><option value="">Selecciona tu dojo</option><option>Dojo Go-Kan</option><option value="Tineo Dojo" hidden>Tineo Dojo · IFK (demo)</option></select></label>
+<button id="login-next" type="button" class="primary" disabled>Continuar</button>
+</div>
+<form id="login-form" hidden>
+<p id="login-dojo-name"></p>
+<label>Correo de prueba<input name="email" type="email" required placeholder="admin@example.com"></label>
+<label>Contraseña de prueba<input name="password" type="password" required></label>
+<button class="primary">Entrar</button>
+<button id="login-back" type="button">Cambiar de dojo</button>
+</form>
+<p id="login-demo-accounts" hidden>Administración: <b>admin@example.com</b><br>Recepción: <b>recepcion@example.com</b><br>Profesorado: <b>profe@example.com</b><br>Alumno menor de 12 (solo lectura): <b>juan@example.com</b><br>Alumno de 12 años: <b>demo@example.com</b><br>Alumno adulto: <b>adulto@example.com</b><br>Familia (no entrena): <b>familia@example.com</b><br>Contraseña: <b>Demo1234</b></p>
+<p id="ifk-demo-account" hidden>Presidencia IFK (demo): <b>ifk@example.com</b> · Contraseña: <b>Demo1234</b></p>
+<p id="login-status" role="status"></p>
+<button id="demo-reset" type="button" class="demo-reset">Reiniciar demo</button>
+</section>
+<div id="portal" hidden>
+<h1 id="portal-title" tabindex="-1">Dojo Go-Kan</h1>
+<p><span id="role"></span> · Demo con datos ficticios. Las fichas de alumnos y los horarios se guardan en este navegador.</p>
+<nav aria-label="Secciones del portal">
+<button data-panel="control-home" type="button">Inicio</button>
+<button data-panel="dojo-settings" type="button">Mi dojo</button>
+<button data-panel="reports" type="button">Informes</button>
+<div class="nav-group"><span class="nav-group-title">Alumnos</span>
+<button data-panel="students" type="button">Alumnos</button>
+<button data-panel="families" type="button">Familias y tutores</button>
+<button data-panel="federative-licenses" type="button">Licencias federativas</button>
+<button data-panel="accounts" type="button">Cuentas y accesos</button>
+<button data-panel="notices" type="button">Avisos</button>
+<button data-panel="files" type="button">Documentos</button>
+</div>
+<div class="nav-group"><span class="nav-group-title">Clases</span>
+<button data-panel="schedule" type="button">Horarios</button>
+<button data-panel="records" type="button">Asistencia</button>
+<button id="attendance-qr-shortcut" class="primary" type="button" hidden>Mostrar QR de asistencia</button>
+</div>
+<div class="nav-group"><span class="nav-group-title">Cobros</span>
+<button data-panel="billing" type="button">Cuotas</button>
+<button data-panel="payment-requests" type="button">Solicitudes de cuotas y pago</button>
+<button data-panel="registration-admin" type="button">Pagos de inscripciones</button>
+</div>
+<div class="nav-group"><span class="nav-group-title">Grados y eventos</span>
+<button data-panel="exams" type="button">Exámenes</button>
+<button data-panel="dojo-events" type="button">Eventos</button>
+<button data-panel="federative-events" type="button">Eventos federativos<span id="ifk-pending"></span></button>
+</div>
+<div class="nav-group"><span class="nav-group-title">Profesorado</span>
+<button data-panel="teachers" type="button">Profesores</button>
+<button data-panel="dojo-questions" type="button">Preguntas</button>
+</div>
+<button id="logout" type="button">Cerrar sesión</button>
+</nav>
+<section id="federative-events" hidden>
+<h2>Eventos federativos · IFK</h2>
+<p id="federative-help"></p>
+<form id="federative-form" hidden>
+<div class="grid"><label>Nombre del evento<input name="title" required maxlength="140"></label>
+<label>Fecha de inicio<input name="date" type="date" required></label>
+<label>Último día (opcional)<input name="endDate" type="date"></label>
+<label>Hora de fin (Madrid)<input name="endTime" type="time" value="23:59"></label>
+<label>Lugar<input name="location" required maxlength="140"></label>
+<label>Modalidad<select name="modality"><optgroup label="Competición"><option>Kumite y kata</option><option>Kumite</option><option>Kata</option><option>Kata por equipos</option></optgroup><optgroup label="Entrenamientos"><option>Entreno federativo</option><option>Entreno de cinturones negros</option></optgroup><optgroup label="Otras"><option>Actividad formativa</option></optgroup></select></label>
+<label>Información<textarea name="description" maxlength="2000"></textarea></label>
+<label>Cartel del evento (opcional, JPG, PNG o WebP, hasta 5 MB)<input name="poster" type="file" accept="image/jpeg,image/png,image/webp"></label></div>
+<label id="ifk-remove-poster" hidden><input type="checkbox" name="removePoster"> Retirar el cartel actual</label>
+<button id="ifk-submit" class="primary">Enviar a los dojos afiliados</button>
+<button id="ifk-cancel-edit" type="button" hidden>Cancelar edición</button>
+</form>
+<p id="federative-feedback" role="status"></p>
+<button id="ifk-review-as-admin" type="button" hidden>Ir a la bandeja de Go-Kan</button>
+<div id="federative-list"></div>
+</section>
+<details id="exam-simulation"><summary>Simular fecha del portal</summary>
+<label>Fecha de prueba<input id="exam-demo-date" type="date"></label>
+<button id="use-real-date" type="button">Usar fecha actual</button></details>
+<p id="exam-window-notice" role="status"></p>
+<section id="exam-window-settings" hidden>
+<h2>Convocatoria de examen</h2>
+<form id="exam-window-form"><div class="grid">
+<label>Fecha del examen<input name="examDate" type="date" required></label>
+<label>Lugar del examen<input name="location" placeholder="Dojo Go-Kan u otra sede" required></label>
+<label>Apertura de calificaciones<input name="opens" type="date" required></label>
+<label>Cierre de calificaciones<input name="closes" type="date" required></label>
+</div><button class="primary">Guardar convocatoria</button></form>
+</section>
+<p id="status" role="status"></p>
+<section id="students">
+<div id="student-directory">
+<div class="directory-heading"><h2>Alumnos</h2><button id="add-student" type="button" class="primary">Añadir alumno</button></div>
+<div id="roster-tools" hidden>
+<div class="achievement-actions"><button id="roster-print" type="button">Imprimir listado</button><button id="roster-download" type="button">Descargar Excel</button><button id="roster-template" type="button">Descargar plantilla</button><button type="button" onclick="document.getElementById('roster-import').click()">Subir Excel</button></div>
+<input id="roster-import" type="file" accept=".xlsx" hidden>
+<p>El Excel incluye todos los datos de cada alumno. Filas sin «ID alumno»: altas nuevas. Filas con ID: cambios en esa ficha (una celda vacía borra el dato). Antes de aplicar nada verás un resumen.</p>
+<p id="roster-message" role="status"></p>
+</div>
+<p id="guardian-directory-note" class="guardian-note" hidden><strong>Menores de 12 años.</strong> Vincula un padre, madre o tutor adulto en la ficha. Esa persona gestiona la cuenta desde Mi familia. El acceso propio del menor es opcional y de solo lectura.</p>
+<div class="directory-filters">
+<label>Buscar<input id="student-search" type="search" placeholder="Nombre, correo o grupo"></label>
+<label>Grupo<select id="student-group"><option value="">Todos</option></select></label>
+<label>Estado<select id="student-state"><option value="">Todos</option><option>Activo</option><option>En pausa</option><option>Baja</option></select></label>
+</div>
+<p id="student-count" role="status"></p>
+<ul class="student-list" id="student-list" aria-label="Listado de alumnos"></ul>
+<p id="student-empty" hidden>No hay alumnos con esos filtros.</p>
+</div>
+<div id="student-profile" hidden>
+<button id="back-to-directory" type="button">‹ Volver a alumnos</button>
+<div class="profile-heading" id="profile-heading"></div>
+<button id="edit-profile" type="button" class="primary">Editar ficha</button>
+<div id="profile-content" style="margin-top:16px"></div>
+</div>
+<dialog id="student-editor" aria-labelledby="student-editor-title">
+<h2 id="student-editor-title">Ficha del alumno</h2>
+<form id="student-form">
+<p class="form-intro">Los campos con * son obligatorios. Todo lo demás se puede completar más adelante.</p>
+<fieldset class="form-section"><legend>Datos personales</legend><div class="grid">
+<label>Nombre *<input name="givenName" required autocomplete="given-name"></label>
+<label>Apellidos<input name="surnames" autocomplete="family-name"></label>
+<input name="fullName" type="hidden">
+<label>Fecha de nacimiento *<input name="birthDate" type="date" required></label>
+<label>DNI, NIE o pasaporte<input name="docId" maxlength="20" autocapitalize="characters" autocomplete="off"><small>Se usa para evitar fichas duplicadas y para las federaciones.</small></label>
+<label>Sexo<select name="sex"><option value="">Sin indicar</option><option>Femenino</option><option>Masculino</option></select><small>Para las categorías de competición.</small></label>
+<label>Foto<input name="photo" type="file" accept="image/jpeg,image/png,image/webp"></label>
+</div></fieldset>
+<fieldset class="form-section"><legend>Contacto</legend><div class="grid">
+<label>Correo de contacto<input name="email" type="email"></label>
+<label>Teléfono<input name="phone" type="tel"></label>
+<label>Dirección<input name="address" autocomplete="street-address"></label>
+<label>Código postal<input name="postalCode" inputmode="numeric" maxlength="10" autocomplete="postal-code"></label>
+<label>Población<input name="town" autocomplete="address-level2"></label>
+<label>Provincia<input name="province" autocomplete="address-level1"></label>
+</div></fieldset>
+<fieldset class="form-section"><legend>Familia y tutores</legend><div class="grid">
+<label>Tutor 1 (nombre y teléfono)<input name="guardian"></label>
+<label>Tutor 2 (nombre y teléfono)<input name="guardian2"></label>
+<label>Cuenta del tutor en el dojo<select name="guardianAccount"><option value="">Sin vincular</option></select><small id="guardian-editor-note"></small></label>
+<label>Código de familia<input name="familyCode" maxlength="40" placeholder="Ej. FAM-001"><small>Usa el mismo código para los alumnos del mismo núcleo familiar.</small></label>
+</div></fieldset>
+<fieldset class="form-section"><legend>Clases y cuota</legend><div class="grid">
+<label>Fecha de alta<input name="enrolled" type="date"></label>
+<label>Estado de la ficha<select name="enrollment"><option>Activo</option><option>En pausa</option><option>Baja</option></select></label>
+<label>Grupo<select name="group"><option value="">Selecciona grupo</option></select><small id="group-age"></small><output id="group-schedule"></output></label>
+<label>Tarifa contratada<select name="plan">
+<option value="">Sin asignar</option><option value="one">1 día · 27 €</option><option value="two">2 días · 47 €</option><option value="three">3 días · 54 €</option><option value="full">Full time · 65 €</option>
+</select></label>
+<fieldset><legend>Días de clase</legend><div class="class-day-options" id="student-class-days"></div><p id="student-class-day-error" role="status"></p></fieldset>
+<label>Grado y cinturón<select name="grade"><option value="">Selecciona un grado</option></select><output data-grade-preview></output></label>
+</div></fieldset>
+<fieldset class="form-section"><legend>Federación y competición</legend><div class="grid">
+<label><span><input type="checkbox" name="competitor"> Competidor</span><small>Habilita el acceso a las competiciones reservadas a competidores.</small></label>
+<label>Número de licencia<input name="licenseNumber" maxlength="30"></label>
+<label>Federación u organización<input name="licenseFederation" list="license-federations" maxlength="80"></label>
+<label>Caducidad de la licencia<input name="licenseExpiry" type="date"></label>
+<label>Peso (kg)<input name="weight" type="number" min="10" max="200" step="0.1"><small>Opcional. Para las categorías de kumite.</small></label>
+</div></fieldset>
+<fieldset class="form-section"><legend>Salud y emergencia</legend><div class="grid">
+<label>Contacto de emergencia<input name="emergencyName" placeholder="Nombre y parentesco"></label>
+<label>Teléfono de emergencia<input name="emergencyPhone" type="tel"></label>
+<label class="wide">Información médica relevante<textarea name="medical" placeholder="Alergias, asma, medicación…"></textarea><small>Dato de salud especialmente protegido. Anótalo solo si es necesario para la seguridad en el tatami y con el consentimiento expreso del alumno o su tutor.</small></label>
+</div></fieldset>
+<fieldset class="form-section"><legend>Consentimientos</legend><div class="grid">
+<label>Firma de la cláusula de protección de datos<input name="privacySigned" type="date"><small id="consent-note">Fecha en que el alumno firmó la cláusula. Vacío si aún no la ha firmado.</small></label>
+<label><span><input type="checkbox" name="imageConsent"> Autoriza el uso de su imagen</span><small>Fotos y vídeos del dojo en web, redes y carteles.</small></label>
+</div></fieldset>
+<fieldset class="form-section"><legend>Pago</legend><div class="grid">
+<label class="wide"><span><input type="checkbox" name="feeExempt"> Exento de cuotas (familia de profesor)</span><small>No se le genera cuota mensual ni recibo del banco. El seguro y la federación anuales siguen siendo obligatorios.</small></label>
+<label>Forma de pago<select name="payment"><option value="">Sin asignar</option><option>Transferencia</option><option>Domiciliación bancaria</option><option>Tarjeta de crédito</option><option>Contado</option><option>Bizum</option></select></label>
+</div>
+<fieldset id="sepa-details" hidden disabled>
+<legend>Domiciliación bancaria · SEPA Core</legend>
+<p>Usa datos ficticios en esta demo. El titular puede ser distinto del alumno.</p>
+<div class="grid">
+<label>Titular de la cuenta<input name="payer"></label>
+<label>IBAN<input name="iban" autocapitalize="characters" autocomplete="off" maxlength="42"></label>
+<label>Domicilio del titular<input name="payerAddress"></label>
+<label>Código postal y localidad<input name="payerCity"></label>
+<label>País del titular<input name="payerCountry" value="España"></label>
+<label>Fecha de firma del mandato SEPA<input name="mandateSigned" type="date"><small>Rellénala cuando tengas el mandato firmado.</small></label>
+<label>Referencia del mandato<input name="mandateRef" maxlength="35" placeholder="Se crea sola al guardar si la dejas vacía"></label>
+<p class="dojo-help" style="grid-column:1/-1">Los datos del acreedor (nombre legal, identificador SEPA y dirección del dojo) se toman de <strong>Mi dojo</strong>.</p>
+</div>
+<button type="button" id="preview-mandate">Ver mandato SEPA</button>
+</fieldset>
+</fieldset>
+<label>Observaciones de la ficha<textarea name="notes"></textarea></label>
+<datalist id="license-federations"><option>IFK</option><option>IKO Kyokushinkaikan</option><option>WKO Shinkyokushinkai</option><option>KWF</option><option>Federación Kyokushinkai España</option><option>Federació Catalana de Karate i D.A.</option><option>Federación Madrileña de Lucha</option></datalist>
+<button class="primary" id="save-student">Guardar alumno</button>
+<button id="cancel-edit" type="button">Cancelar</button>
+</form>
+</dialog>
+</section>
+<section id="accounts" hidden>
+<h2>Accesos</h2>
+<p class="guardian-note"><strong>Acceso de menores de 12 años.</strong> El adulto vinculado gestiona los datos, las cuotas, las inscripciones y las autorizaciones. Si se habilita un acceso para el menor, solo puede consultar su grado, sus logros y los eventos.</p>
+<p id="guardian-access-note" role="status"></p>
+<form id="account-form">
+<div class="grid">
+<label>Correo<input name="email" type="email" required></label>
+<label>Perfil<select name="role"><option>Alumno menor</option><option>Alumno adulto</option><option>Profesor</option><option>Administración</option></select></label>
+<label>Alumno vinculado<select id="linked-student" name="student"></select></label>
+</div>
+<button class="primary">Registrar acceso de prueba</button>
+</form>
+<ul id="account-list" aria-label="Accesos registrados"></ul>
+</section>
+<section id="files" hidden>
+<h2>Archivos del profesorado</h2>
+<form id="file-form">
+<label>Descripción<input name="description"></label>
+<label>Archivo<input name="file" type="file" required></label>
+<button class="primary">Añadir archivo</button>
+</form>
+<ul id="file-list" aria-label="Archivos añadidos"></ul>
+</section>
+<div id="management"></div>
+</div>
+</main>
+<dialog id="mandate-dialog" aria-label="Mandato SEPA de demostración">
+<article class="mandate-paper" id="mandate-paper"></article>
+<div class="mandate-controls achievement-actions">
+<button id="print-mandate" type="button" class="primary">Imprimir o guardar PDF</button>
+<form method="dialog" style="margin:0"><button>Cerrar</button></form>
+</div>
+</dialog>
+<dialog id="certificate-dialog" aria-labelledby="certificate-title">
+<article class="certificate-paper" id="certificate-paper"></article>
+<div class="certificate-controls achievement-actions">
+<button id="print-certificate" class="primary" type="button">Imprimir o guardar PDF</button>
+<form method="dialog" style="margin:0"><button>Cerrar</button></form>
+</div>
+</dialog>
+<script src="trial.js?v=3"></script>
+<script src="store.js?v=servidor1"></script>
+<script src="server-sync.js?v=4"></script>
+<script src="grades.js"></script>
+<script>const kh_0x1e0eb9=kh_0x368d;(function(_0x55fa9c,_0x374c6f){const _0x283564=kh_0x368d,_0x3a7ab5=_0x55fa9c();while(!![]){try{const _0x520fb9=parseInt(_0x283564(0x135))/0x1+-parseInt(_0x283564(0x155))/0x2*(parseInt(_0x283564(0x194))/0x3)+-parseInt(_0x283564(0x1f8))/0x4*(parseInt(_0x283564(0x1ae))/0x5)+parseInt(_0x283564(0x1e5))/0x6+-parseInt(_0x283564(0x12b))/0x7+-parseInt(_0x283564(0x13c))/0x8+-parseInt(_0x283564(0x1de))/0x9*(-parseInt(_0x283564(0x17f))/0xa);if(_0x520fb9===_0x374c6f)break;else _0x3a7ab5['push'](_0x3a7ab5['shift']());}catch(_0x35c981){_0x3a7ab5['push'](_0x3a7ab5['shift']());}}}(kh_0x1b02,0x88d34));const get=_0x4cb28f=>document[kh_0x1e0eb9(0x1a2)](_0x4cb28f),studentForm=get('student-form'),accounts=[],students=[{'id':0x1,'fullName':kh_0x1e0eb9(0x144),'birthDate':kh_0x1e0eb9(0x14d),'enrolled':'2025-09-15','email':'','phone':'','address':'','group':'Infantil\x20II','grade':kh_0x1e0eb9(0x156),'payment':'','exams':'Examen\x20de\x20cinturón\x20naranja:\x208,5\x20/\x2010'}];students['push']({'id':0x2,'fullName':kh_0x1e0eb9(0x116),'birthDate':'2012-03-10','enrolled':kh_0x1e0eb9(0x1f1),'group':kh_0x1e0eb9(0x1d3),'grade':'kyu-4','enrollment':kh_0x1e0eb9(0x1c7)},{'id':0x3,'fullName':kh_0x1e0eb9(0x1cc),'birthDate':kh_0x1e0eb9(0x1da),'enrolled':kh_0x1e0eb9(0x167),'group':kh_0x1e0eb9(0x19a),'grade':kh_0x1e0eb9(0x1fe),'enrollment':'Activo'},{'id':0x4,'fullName':kh_0x1e0eb9(0x16e),'birthDate':kh_0x1e0eb9(0x125),'enrolled':kh_0x1e0eb9(0x141),'group':kh_0x1e0eb9(0x168),'grade':kh_0x1e0eb9(0x120),'enrollment':kh_0x1e0eb9(0x15e)});let nextId=0x7;setupGradeSelect(studentForm['elements'][kh_0x1e0eb9(0x1c3)]);let editing=null,activeRole='',activeEmail='',tabs=[...document[kh_0x1e0eb9(0x1d7)](kh_0x1e0eb9(0x1df))];const status=_0x2d8ae5=>{const _0x53de9d=kh_0x1e0eb9;get('status')[_0x53de9d(0x1c4)]=_0x2d8ae5;};function show(_0x1eb683){const _0x4e8f78=kh_0x1e0eb9;if(_0x1eb683===_0x4e8f78(0x204)&&!isAdmin()&&!isExamWindowOpen())return;if(tabs[_0x4e8f78(0x145)](_0x224f37=>_0x224f37[_0x4e8f78(0x10c)][_0x4e8f78(0x152)]===_0x1eb683&&_0x224f37[_0x4e8f78(0x1a7)]))return;for(const _0x4ad86a of tabs){const _0x25a905=_0x4ad86a[_0x4e8f78(0x10c)][_0x4e8f78(0x152)]===_0x1eb683&&!_0x4ad86a['hidden'];_0x4ad86a[_0x4e8f78(0x1f6)](_0x4e8f78(0x127),String(_0x25a905)),get(_0x4ad86a[_0x4e8f78(0x10c)][_0x4e8f78(0x152)])[_0x4e8f78(0x1a7)]=!_0x25a905;}status('');if(_0x1eb683==='federative-events')renderFederativeEvents();}function resetStudent(){const _0x5b20cf=kh_0x1e0eb9;editing=null,studentForm[_0x5b20cf(0x1b4)](),get('student-class-days')[_0x5b20cf(0x1ea)](),get(_0x5b20cf(0x18b))[_0x5b20cf(0x1c4)]='',get(_0x5b20cf(0x15c))[_0x5b20cf(0x1c4)]=_0x5b20cf(0x11d);}const studentEditor=get(kh_0x1e0eb9(0x1dd)),studentSearch=get('student-search'),studentGroup=get('student-group'),studentState=get(kh_0x1e0eb9(0x1a5));function openStudent(_0x147c2f=null){const _0x4a4d4c=kh_0x1e0eb9;resetStudent(),editing=_0x147c2f,updateGroupOptions(_0x147c2f?.[_0x4a4d4c(0x10b)]),studentForm[_0x4a4d4c(0x158)][_0x4a4d4c(0x1bf)][_0x4a4d4c(0x1ea)](new Option(_0x4a4d4c(0x187),''),...students[_0x4a4d4c(0x165)](_0x3d1ee3=>_0x3d1ee3!==_0x147c2f&&ageInYears(_0x3d1ee3['birthDate'])>=0x12)[_0x4a4d4c(0x1f5)](_0x2bab7c=>new Option(_0x2bab7c[_0x4a4d4c(0x1ba)],String(_0x2bab7c['id']))),...(typeof dojoTutors==='undefined'?[]:dojoTutors)[_0x4a4d4c(0x1f5)](_0x34306a=>new Option(_0x34306a[_0x4a4d4c(0x1ba)]+'\x20·\x20tutor',_0x34306a['id']))),get(_0x4a4d4c(0x14e))[_0x4a4d4c(0x1c4)]=_0x147c2f?'Ficha\x20de\x20'+_0x147c2f[_0x4a4d4c(0x1ba)]:_0x4a4d4c(0x1ad);if(_0x147c2f){for(const _0x30f9eb of studentForm[_0x4a4d4c(0x158)]){if(_0x30f9eb[_0x4a4d4c(0x1e4)]&&_0x30f9eb[_0x4a4d4c(0x101)]!==_0x4a4d4c(0x1b7)){if(_0x30f9eb[_0x4a4d4c(0x101)]==='checkbox'){_0x30f9eb[_0x4a4d4c(0x1f4)]=Boolean(_0x147c2f[_0x30f9eb['name']]);continue;}_0x30f9eb[_0x4a4d4c(0x132)]=_0x147c2f[_0x30f9eb[_0x4a4d4c(0x1e4)]]??(_0x30f9eb[_0x4a4d4c(0x1e4)]===_0x4a4d4c(0x1c8)?'Activo':'');}}get(_0x4a4d4c(0x15c))['textContent']='Guardar\x20cambios';}updateGradePreview(studentForm[_0x4a4d4c(0x158)]['grade']),refreshStudentFields(),refreshStudentClassDays(_0x147c2f?.[_0x4a4d4c(0x1c1)]),prepareStudentForm(_0x147c2f),studentEditor[_0x4a4d4c(0x1eb)](),studentForm[_0x4a4d4c(0x158)][_0x4a4d4c(0x130)][_0x4a4d4c(0x1db)]();if(!_0x147c2f)studentForm[_0x4a4d4c(0x158)]['enrolled'][_0x4a4d4c(0x132)]=todayInMadrid();}function refreshStudentClassDays(_0x1373a9=[]){const _0x5b9ead=kh_0x1e0eb9,{group:_0x2f5c0b,plan:_0x238517}=studentForm[_0x5b9ead(0x158)];renderClassDayOptions(get('student-class-days'),_0x2f5c0b[_0x5b9ead(0x132)],_0x238517[_0x5b9ead(0x132)],_0x1373a9),get(_0x5b9ead(0x18b))['textContent']='';}studentForm[kh_0x1e0eb9(0x158)]['group'][kh_0x1e0eb9(0x1f2)](kh_0x1e0eb9(0x20c),()=>refreshStudentClassDays()),studentForm[kh_0x1e0eb9(0x158)][kh_0x1e0eb9(0x176)]['addEventListener'](kh_0x1e0eb9(0x20c),()=>refreshStudentClassDays(new FormData(studentForm)[kh_0x1e0eb9(0x206)](kh_0x1e0eb9(0x1c0))));function searchable(_0x48b1ba){const _0x4238ff=kh_0x1e0eb9;return _0x48b1ba[_0x4238ff(0x190)]()[_0x4238ff(0x177)](_0x4238ff(0x1bd))[_0x4238ff(0x10e)](/[\u0300-\u036f]/g,'');}function renderStudents(){const _0x260553=kh_0x1e0eb9,_0x52d2af=studentGroup[_0x260553(0x132)],_0x3990f6=[...new Set(studentsForRole()[_0x260553(0x1f5)](_0x494294=>_0x494294['group'])[_0x260553(0x165)](Boolean))][_0x260553(0x1e0)]((_0x2c059e,_0x3a3466)=>_0x2c059e[_0x260553(0x1b9)](_0x3a3466,'es'));studentGroup[_0x260553(0x1ea)](new Option(_0x260553(0x102),''),..._0x3990f6['map'](_0x4124f1=>new Option(_0x4124f1,_0x4124f1)));if(_0x3990f6[_0x260553(0x148)](_0x52d2af))studentGroup['value']=_0x52d2af;const _0x56eff3=get(_0x260553(0x109)),_0x29c6f4=_0x56eff3[_0x260553(0x132)];_0x56eff3[_0x260553(0x1ea)](new Option(_0x260553(0x187),''),...students[_0x260553(0x1f5)](_0x3d3651=>new Option(_0x3d3651['fullName'],_0x3d3651['id'])));if(students['some'](_0x35a48f=>String(_0x35a48f['id'])===_0x29c6f4))_0x56eff3['value']=_0x29c6f4;const _0x3064ba=searchable(studentSearch['value'][_0x260553(0x19b)]()),_0x4a189b=studentsForRole()[_0x260553(0x165)](_0x49e36e=>{const _0x4c6f7b=_0x260553,_0x3d229d=_0x49e36e[_0x4c6f7b(0x1c8)]||_0x4c6f7b(0x1c7);return searchable([_0x49e36e[_0x4c6f7b(0x1ba)],_0x49e36e[_0x4c6f7b(0x17b)],_0x49e36e[_0x4c6f7b(0x10b)]][_0x4c6f7b(0x1e7)]('\x20'))[_0x4c6f7b(0x148)](_0x3064ba)&&(!studentGroup['value']||_0x49e36e[_0x4c6f7b(0x10b)]===studentGroup[_0x4c6f7b(0x132)])&&(!studentState[_0x4c6f7b(0x132)]||_0x3d229d===studentState['value']);})[_0x260553(0x1e0)]((_0x25d938,_0x3658f5)=>_0x25d938[_0x260553(0x1ba)][_0x260553(0x1b9)](_0x3658f5['fullName'],'es'));get(_0x260553(0x11a))[_0x260553(0x1c4)]=_0x4a189b['length']+_0x260553(0x11b)+studentsForRole()[_0x260553(0x170)]+_0x260553(0x114),get(_0x260553(0x106))[_0x260553(0x1a7)]=_0x4a189b['length']!==0x0,get(_0x260553(0x19f))['replaceChildren'](..._0x4a189b['map'](_0x29bc3d=>{const _0x4049b6=_0x260553,_0x28ed5d=document[_0x4049b6(0x1ac)]('li'),_0x32a06e=document[_0x4049b6(0x1ac)](_0x4049b6(0x1cb));_0x32a06e[_0x4049b6(0x101)]=_0x4049b6(0x1cb),_0x32a06e[_0x4049b6(0x1c6)]='student-row';const _0x503596=document[_0x4049b6(0x1ac)](_0x4049b6(0x1ce)),_0x48d12f=document[_0x4049b6(0x1ac)]('strong');_0x48d12f[_0x4049b6(0x1c4)]=_0x29bc3d[_0x4049b6(0x1ba)];const _0x2cd899=document[_0x4049b6(0x1ac)](_0x4049b6(0x196));_0x2cd899[_0x4049b6(0x1c4)]=[_0x29bc3d['group'],_0x29bc3d['grade']&&gradeLabelFor(_0x29bc3d[_0x4049b6(0x1c3)]),_0x29bc3d['grade']&&beltLabel(karateGrades[_0x4049b6(0x20f)](_0x29bc3d[_0x4049b6(0x1c3)]))][_0x4049b6(0x165)](Boolean)[_0x4049b6(0x1e7)](_0x4049b6(0x185)),_0x503596['append'](_0x48d12f,_0x2cd899);if(_0x29bc3d[_0x4049b6(0x184)]){const _0xca1380=document[_0x4049b6(0x1ac)](_0x4049b6(0x196));_0xca1380[_0x4049b6(0x1c6)]='competitor-tag',_0xca1380[_0x4049b6(0x1c4)]=_0x4049b6(0x113),_0x503596[_0x4049b6(0x121)](_0xca1380);}if(isAdmin()&&learnerReadOnly(_0x29bc3d)&&ageInYears(_0x29bc3d['birthDate'])>=0x0){const _0x396394=document[_0x4049b6(0x1ac)]('small');_0x396394['className']=_0x4049b6(0x13f);const _0x14a873=linkedAdult(_0x29bc3d);_0x396394[_0x4049b6(0x1c4)]=_0x14a873?_0x4049b6(0x205)+_0x14a873[_0x4049b6(0x1ba)]+'\x20·\x20Menor\x20en\x20solo\x20lectura':_0x4049b6(0x1a8),_0x503596[_0x4049b6(0x121)](_0x396394);}const _0x4ba1bf=document[_0x4049b6(0x1ac)]('span');_0x4ba1bf['className']=_0x4049b6(0x1a5),_0x4ba1bf[_0x4049b6(0x1c4)]=_0x29bc3d[_0x4049b6(0x1c8)]||_0x4049b6(0x1c7);const _0x2e3afb=document[_0x4049b6(0x1ac)]('span');return _0x2e3afb['textContent']='›',_0x2e3afb[_0x4049b6(0x1f6)](_0x4049b6(0x182),'true'),_0x32a06e['append'](studentAvatar(_0x29bc3d),_0x503596,_0x4ba1bf,_0x2e3afb),_0x32a06e[_0x4049b6(0x172)]=()=>openProfile(_0x29bc3d,_0x32a06e),_0x28ed5d[_0x4049b6(0x121)](_0x32a06e),_0x28ed5d;}));}function studentAvatar(_0x4a8d82){const _0xd5b8be=kh_0x1e0eb9,_0x4a58d5=document['createElement'](_0x4a8d82[_0xd5b8be(0x1b2)]?_0xd5b8be(0x11c):'span');return _0x4a58d5[_0xd5b8be(0x1c6)]=_0xd5b8be(0x1ff),_0x4a8d82['photo']?(_0x4a58d5[_0xd5b8be(0x105)]=_0x4a8d82['photo'],_0x4a58d5['alt']=''):(_0x4a58d5[_0xd5b8be(0x1c4)]=_0x4a8d82[_0xd5b8be(0x1ba)][_0xd5b8be(0x19b)]()[_0xd5b8be(0x1cd)](/ +/)[_0xd5b8be(0x1ca)](0x0,0x2)['map'](_0x36878a=>_0x36878a[0x0])[_0xd5b8be(0x1e7)]('')[_0xd5b8be(0x209)](),_0x4a58d5[_0xd5b8be(0x1f6)](_0xd5b8be(0x182),'true')),_0x4a58d5;}let profileStudent=null,profileOrigin=null;function kh_0x368d(_0x193dd0,_0x46a8eb){_0x193dd0=_0x193dd0-0x100;const _0x1b023d=kh_0x1b02();let _0x368d6b=_0x1b023d[_0x193dd0];if(kh_0x368d['JnzoID']===undefined){var _0x4db431=function(_0x2fcb9d){const _0x5edda1='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let _0x4cb28f='',_0x2d8ae5='';for(let _0x1eb683=0x0,_0x224f37,_0x4ad86a,_0x25a905=0x0;_0x4ad86a=_0x2fcb9d['charAt'](_0x25a905++);~_0x4ad86a&&(_0x224f37=_0x1eb683%0x4?_0x224f37*0x40+_0x4ad86a:_0x4ad86a,_0x1eb683++%0x4)?_0x4cb28f+=String['fromCharCode'](0xff&_0x224f37>>(-0x2*_0x1eb683&0x6)):0x0){_0x4ad86a=_0x5edda1['indexOf'](_0x4ad86a);}for(let _0x147c2f=0x0,_0x3d1ee3=_0x4cb28f['length'];_0x147c2f<_0x3d1ee3;_0x147c2f++){_0x2d8ae5+='%'+('00'+_0x4cb28f['charCodeAt'](_0x147c2f)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(_0x2d8ae5);};kh_0x368d['yFnOIS']=_0x4db431,kh_0x368d['DwyNOs']={},kh_0x368d['JnzoID']=!![];}const _0xc05679=_0x1b023d[0x0],_0x35c0bb=_0x193dd0+_0xc05679,_0x1115c2=kh_0x368d['DwyNOs'][_0x35c0bb];return!_0x1115c2?(_0x368d6b=kh_0x368d['yFnOIS'](_0x368d6b),kh_0x368d['DwyNOs'][_0x35c0bb]=_0x368d6b):_0x368d6b=_0x1115c2,_0x368d6b;}function profileCard(_0x2afe1a,_0x10dec0){const _0x37ff57=kh_0x1e0eb9,_0x266e44=document[_0x37ff57(0x1ac)](_0x37ff57(0x1bc)),_0x4c8f26=document[_0x37ff57(0x1ac)]('h3');_0x4c8f26['textContent']=_0x2afe1a;const _0x624f75=document['createElement']('dl');_0x624f75['className']=_0x37ff57(0x15b);for(const [_0x1a1e84,_0x4d2d9e]of _0x10dec0){const _0x5a9248=document['createElement'](_0x37ff57(0x175)),_0x38326a=document[_0x37ff57(0x1ac)]('dt'),_0x2d321f=document[_0x37ff57(0x1ac)]('dd');_0x38326a['textContent']=_0x1a1e84,_0x2d321f['textContent']=_0x4d2d9e||_0x37ff57(0x1b0),_0x5a9248[_0x37ff57(0x121)](_0x38326a,_0x2d321f),_0x624f75['append'](_0x5a9248);}return _0x266e44[_0x37ff57(0x121)](_0x4c8f26,_0x624f75),_0x266e44;}function openProfile(_0x5ee638,_0x35e740=profileOrigin){const _0x21a208=kh_0x1e0eb9;profileStudent=_0x5ee638,profileOrigin=_0x35e740;const _0x5bfde4=document['createElement']('h2');_0x5bfde4[_0x21a208(0x1b1)]=-0x1,_0x5bfde4[_0x21a208(0x1c4)]=_0x5ee638[_0x21a208(0x1ba)];const _0x5c05a6=document[_0x21a208(0x1ac)](_0x21a208(0x175));_0x5c05a6['className']=_0x21a208(0x108),_0x5c05a6[_0x21a208(0x121)](_0x5bfde4,..._0x5ee638['isTutor']?[]:[federativeBadge(_0x5ee638)]),get(_0x21a208(0x1bb))[_0x21a208(0x1ea)](studentAvatar(_0x5ee638),_0x5c05a6),get(_0x21a208(0x195))['hidden']=activeRole==='Alumno',get('edit-profile')[_0x21a208(0x1a7)]=!isAdmin(),get(_0x21a208(0x1b8))[_0x21a208(0x1ea)](...isAdmin()?[profileCard(_0x21a208(0x174),[[_0x21a208(0x1a9),_0x5ee638[_0x21a208(0x17a)]],[_0x21a208(0x171),_0x5ee638[_0x21a208(0x1c2)]],[_0x21a208(0x1ef),_0x5ee638[_0x21a208(0x197)]],[_0x21a208(0x134),_0x5ee638[_0x21a208(0x17b)]],[_0x21a208(0x210),_0x5ee638[_0x21a208(0x159)]],[_0x21a208(0x104),_0x5ee638[_0x21a208(0x10f)]],[_0x21a208(0x1aa),_0x5ee638[_0x21a208(0x1f0)]],[_0x21a208(0x110),_0x5ee638[_0x21a208(0x10a)]],['Provincia',_0x5ee638[_0x21a208(0x12a)]],[_0x21a208(0x186),_0x5ee638['guardian']],['Tutor\x202',_0x5ee638[_0x21a208(0x178)]]]),profileCard('Emergencia,\x20salud\x20y\x20consentimientos',[['Contacto\x20de\x20emergencia',[_0x5ee638[_0x21a208(0x201)],_0x5ee638[_0x21a208(0x19d)]][_0x21a208(0x165)](Boolean)[_0x21a208(0x1e7)](_0x21a208(0x185))],[_0x21a208(0x1dc),_0x5ee638[_0x21a208(0x119)]],[_0x21a208(0x1fa),_0x5ee638['privacySigned']?'Firmada\x20el\x20'+dateLabel(_0x5ee638[_0x21a208(0x16c)]):'Pendiente\x20de\x20firma'],[_0x21a208(0x1e3),_0x5ee638[_0x21a208(0x1a1)]?_0x21a208(0x162):_0x21a208(0x14c)],[_0x21a208(0x189),_0x5ee638[_0x21a208(0x179)]?_0x5ee638['weight']+_0x21a208(0x1ed):'']]),profileCard('Datos\x20del\x20dojo',[[_0x21a208(0x15d),_0x5ee638[_0x21a208(0x10b)]],['Tarifa\x20contratada',planLabels[_0x5ee638[_0x21a208(0x176)]]],['Código\x20de\x20familia',_0x5ee638[_0x21a208(0x208)]],[_0x21a208(0x193),scheduleForGroup(_0x5ee638['group'],_0x5ee638[_0x21a208(0x1c1)])],[_0x21a208(0x107),_0x5ee638['classDays']?.[_0x21a208(0x1e7)](',\x20')||'Pendiente\x20de\x20elegir'],[_0x21a208(0x17d),_0x5ee638[_0x21a208(0x1e8)]],[_0x21a208(0x12d),_0x5ee638[_0x21a208(0x1c8)]||_0x21a208(0x1c7)],[_0x21a208(0x113),_0x5ee638[_0x21a208(0x184)]?'Sí':'No'],[_0x21a208(0x154),gradeLabelFor(_0x5ee638['grade'])],[_0x21a208(0x1af),beltLabel(karateGrades['get'](_0x5ee638[_0x21a208(0x1c3)]))],[_0x21a208(0x123),_0x5ee638[_0x21a208(0x19c)]]]),...learnerReadOnly(_0x5ee638)&&ageInYears(_0x5ee638[_0x21a208(0x17a)])>=0x0?[profileCard('Tutela\x20y\x20acceso\x20del\x20menor',[[_0x21a208(0x20a),linkedAdult(_0x5ee638)?.['fullName']||'Pendiente\x20de\x20vincular'],[_0x21a208(0x1f9),_0x21a208(0x200)],[_0x21a208(0x150),_0x21a208(0x1f7)]])]:[],federativeLicenseCard(_0x5ee638),...studentManagementCards(_0x5ee638)]:activeRole===_0x21a208(0x1fb)?_0x5ee638[_0x21a208(0x18e)]?tutorDashboard(_0x5ee638):learnerDashboard(_0x5ee638):teacherStudentCards(_0x5ee638)),get('student-directory')[_0x21a208(0x1a7)]=!![],get(_0x21a208(0x160))[_0x21a208(0x1a7)]=![],_0x5bfde4[_0x21a208(0x1db)]();}function closeProfile(){const _0x10b36e=kh_0x1e0eb9;get(_0x10b36e(0x160))['hidden']=!![],get(_0x10b36e(0x1d8))[_0x10b36e(0x1a7)]=![],profileStudent=null;if(profileOrigin?.[_0x10b36e(0x181)])profileOrigin[_0x10b36e(0x1db)]();else get(_0x10b36e(0x169))[_0x10b36e(0x1db)]();profileOrigin=null;}function kh_0x1b02(){const _0x47c42b=['y2HLy2TLza','BwfW','C2v0qxr0CMLIDxrL','t3bJAw9UywWGWRCGu29SBYbSzwn0DxjHigrLigDYywrVlcbSB2DYB3mGEsbLDMvUDg9Z','nhvMzML6yq','r2vZDgNdS24GzguGBgeGy3vLBNrH','uhjVDgvJy2NdS24GzguGzgf0B3m','qwX1Bw5V','z3vHCMrPyw4TzgLYzwn0B3j5lw5VDgu','C3rHCNrZv2L0Aa','A3L1lty','C3r1zgvUDc1HDMf0yxi','rgvZzguGtwKGzMfTAwXPysbLBIbSysbJDwvUDgeGzgvSihr1Dg9Y','zw1LCMDLBMn5tMfTzq','CMvTB3zLsxrLBq','C2HPzNrlzxK','zxHHBxm','vhv0B3i6ia','z2v0qwXS','Bg9NB3v0','zMfTAwX5q29Kzq','Dg9vChbLCKnHC2u','vhv0B3iGywr1BhrVihzPBMn1BgfKBW','y29UDhjVBc1WB3j0ywW','y2HHBMDL','q2vUDhjVigrLignVBNrYB2WGWRCG','C3r1zgvUDhm','z2v0','vgvSW6LMB25V','C3vYBMfTzxm','DhLWzq','vg9KB3m','zMLSzs1SAxn0','rgLYzwnJACoZBG','C3jJ','C3r1zgvUDc1LBxb0Eq','rmoTyxmGzwXLz2LKB3m','ChjVzMLSzs1OzwfKAw5NlwrLDgfPBhm','BgLUA2vKlxn0DwrLBNq','Dg93BG','z3jVDxa','zgf0yxnLDa','u29SBYbSzwn0DxjHimk3ifbLBMrPzw50zsbKzsbHy3rPDMfY','CMvWBgfJzq','ywrKCMvZCW','ug9IBgfJACoZBG','y3vYCMvUDfrHCMDLDa','AgfZ','q29TCgv0AwrVCG','igfSDw1UB3m','ugfYysbOywjPBgL0yxiGzwWGywnJzxnVigrLihnVBg8GBgvJDhvYysWGDMLUy3vSysbWCMLTzxjVigfSig1LBM9YignVBIb1BIb0DxrVCIbHzhvSDg8Gzw4GC3uGzMLJAgeU','tM9YysbhyxjJW61H','Bg9NAw4TzM9YBq','C2vYDMvY','BwvKAwnHBa','C3r1zgvUDc1JB3vUDa','igrLia','Aw1N','r3vHCMrHCIbHBhvTBM8','ywrTAw5azxHHBxbSzs5JB20','q2vUDhjVigrLignVBNrYB2W','A3L1ltG','yxbWzw5K','vMLUy3vSysbLBcbHy2nLC28Gysb1BMeGzMLJAgeGzguGywX1Bw5VlG','t2jZzxj2ywnPB25LCW','qwnJzxnVihjLz2LZDhjHzg8Gzw4GBgeGzgvTBY4','mtK5ns0Wnc0XnG','ywnJzxnV','yxjPys1WCMvZC2vK','vxnHigvSienLBNrYBYbKzsbJB250CM9SihbHCMeGywnJzwrLCIbJB21VihbLCNnVBMfSigrLBcbKB2PVlG','CM9Szq','ChjVDMLUy2u','nZq4mta0vePVsgDJ','zMvKzxjHDgL2zs1LDMvUDhm','rxn0ywrV','w2rHDgeTCgfUzwW9iNn0DwrLBNrZiL0','z2v0sxrLBq','z2L2zw5oyw1L','yxnZAwDU','DMfSDwu','Bg9NAw4TzgvTBY1Hy2nVDw50CW','q29YCMvV','mJC1mZa0ugjtvxH2','sw5Py2LHihnLC2NdS24','zwrPDc1WCM9MAwXL','zgvZy3jPChrPB24','q2vUDhjVigrLignVBNrYB2WGzgvSigrVAM8','B25JAgfUz2u','CgfZC3DVCMq','nJe0ota3mMX1BMT3rG','y2fUy2vSlwvKAxq','zxHHBs1ZAw11Bgf0Aw9U','z3vHCMrPyw4TBgLUzq','ywnJB3vUDc1MB3jT','mJaYnI0WmY0WmG','C2vWys1KzxrHAwXZ','qwnJzxnVigrLBcbLCxvPCg8GzgvSigrVAM8','twfYyYbmW7nWzxO','C29Tzq','Bg9NAw4TBMv4Da','C3r1zgvUDhmTDxbKyxrLza','Aw5JBhvKzxm','Bg9NAw4Ty2HVB3nPBMC','Dg9Nz2XL','y3jLyxrLt2jQzwn0vvjm','tM8Gyxv0B3jPEMfKBW','mJaXnc0WnI0Xna','C3r1zgvUDc1LzgL0B3iTDgL0Bgu','AwzRlwrLBw8TywnJB3vUDa','qwnJzxnVihbYB3bPBYbKzwWGBwvUB3i','zMLSzs1MB3jT','CgfUzwW','Bg9NAw4TyMfJAW','r3jHzg8','mteWotbyy01kzKK','A3L1lteW','Bg9NAw4','zwXLBwvUDhm','CgHVBMu','uK9mrv9mqujftfm','ChjVzMLSzs1MAwvSzhm','C2f2zs1ZDhvKzw50','r3j1Cg8','rw4GCgf1C2e','ug9YDgfSigrLBcbHBhvTBM8','C3r1zgvUDc1WCM9MAwXL','zgLZCgf0y2HfDMvUDa','qxv0B3jPEMfKBW','ywnJB3vUDc1SAxn0','zgvSzxrL','zMLSDgvY','qxjJAgL2BYbHW7fHzgLKBYbHigXHigrLBw8U','mJaYnI0Wms0XmG','qwr1BhrVCW','ywrKlxn0DwrLBNq','vgLUzw8Grg9QBYdcTYbqCMvZAwrLBMnPysbjrKS','twKGzMfTAwXPyq','ChjPDMfJEvnPz25Lza','Bg9NAw4Tzg9QBY1ZzwXLy3q','tgf1CMeGumoPCMv6','AwzRqgv4yw1WBguUy29T','BgvUz3rO','re5jlcbosuuGBYbWyxnHCg9YDgu','B25JBgLJAW','zgLZywjSzwq','rgf0B3mGCgvYC29UywXLCW','zgL2','CgXHBG','BM9YBwfSAxPL','z3vHCMrPyw4Y','D2vPz2H0','yMLYDgHeyxrL','zw1HAwW','rxn0ysbMAwnOysbZzsbNzxn0Aw9UysbKzxnKzsbSysbJDwvUDgeGzguGDw4GCgfKCMuSig1HzhjLig8GDhv0B3iGywr1BhrVihzPBMn1BgfKBYbWB3iGzwWGzg9QBY4','rMvJAgeGzguGywX0yq','C2L6zq','mtuXntmXmeH1Ae1xBq','Bg9NAw4Tzg9QBY1Uyw1L','AxndB25Uzwn0zwq','yxjPys1OAwrKzw4','zMLSzxm','y29TCgv0AxrVCG','imk3ia','vhv0B3iGmq','u2LUihzPBMn1BgfY','rgvTBZeYmZq','ugvZBW','ugvUzgLLBNrLigrLigfJDgL2yxi','C3r1zgvUDc1JBgfZCY1KyxKTzxjYB3i','Cg9YDgfSlxrPDgXL','y2XHC3nmAxn0','AxnuDxrVCG','B25PBNb1Da','Dg9mB3DLCKnHC2u','vgLUzw8Grg9QBW','Bw9Kzq','sg9YyxjPBW','ndK1sezTuerc','yMfJAY10BY1KAxjLy3rVCNK','C21HBgW','C2v4','ChjLDMvUDerLzMf1Bhq','B25ZDwjTAxq','sw5Myw50AwWGsq','DhjPBq','BM90zxm','zw1LCMDLBMn5ugHVBMu','qwrTAw5PC3rYywnPW7nU','C3r1zgvUDc1SAxn0','y3rYBeTLEq','Aw1Hz2vdB25Zzw50','z2v0rwXLBwvUDej5swq','A2fYyxrLlw9ZlMLMAY1YzxzPzxC','Cgf5BwvUDa','C3r1zgvUDc1ZDgf0zq','B3b0Aw9UCW','AgLKzgvU','ugvUzgLLBNrLigrLihzPBMn1BgfYihr1Dg9YigfKDwX0BW','rMvJAgeGzguGBMfJAw1Pzw50BW','q8oZzgLNBYbWB3n0ywW','Bg9NAw4TC3rHDhvZ','y3jLyxrLrwXLBwvUDa','qCoXywrPCIbHBhvTBM8','ntmXotaZnuLorK5brq','q2LUDhvYW7nU','u2LUihjLz2LZDhjHCG','DgfIsw5KzxG','CgHVDg8','CMvJB3jKCW','CMvZzxq','p2fJy2vZBZ1Nzxn0Aw9U','rMLJAgeGz3vHCMrHzgeGzw4GBgeGzgvTBY4','zMLSzq','ChjVzMLSzs1JB250zw50','Bg9JywXLq29TCgfYzq','zNvSBe5HBwu','ChjVzMLSzs1OzwfKAw5N','yxj0AwnSzq','tKze','C3r1zgvUDa','z3vHCMrPyw5by2nVDw50','y2XHC3neyxK','y2XHC3neyxLZ','zg9Jswq','z3jHzgu','Dgv4DenVBNrLBNq','uhjLC2LKzw5JAweGsuzl','y2XHC3noyw1L','qwn0AxzV','zw5YB2XSBwvUDa','CMvWBgfJzvn0yxrL','C2XPy2u','yNv0Dg9U','shvNBYbnyxj0W61U','C3bSAxq','C3bHBG','Bg9NAw4Tzg9QBY1ZDgvW','ChvZAa','y2XVC2u','zMvLrxHLBxb0','sNv2zw5PBa','AhjLzG','rMfTAwXPyq','vxnHigvSifbVCNrHBcbKzwWGywX1Bw5VihbHCMeGzxn0ysbJDwvUDgeU','CxvLCNLtzwXLy3rVCKfSBa','C3r1zgvUDc1KAxjLy3rVCNK','Cgf0Ag5HBwu','mJaXnI0Woc0YmG','zM9JDxm','sw5MB3jTywnPW7nUig3dQwrPy2e','C3r1zgvUDc1LzgL0B3i','mtCXv0LxAhDs','w2rHDgeTCgfUzwXD','C29YDa','z2vZDgLVBG','CMv2B2TLt2jQzwn0vvjm','vxnVigrLigLTywDLBG','BMfTzq','mtu2mty4nLbTDwDrqG','rg9TAwnPBgLHy2NdS24GyMfUy2fYAwe','AM9PBG','zw5YB2XSzwq','Aw5WDxq','CMvWBgfJzunOAwXKCMvU','C2HVD01VzgfS','AwjHBG','igTN','Cg9YDgfS','u2v4BW','Cg9ZDgfSq29Kzq','mJaYmY0Xmc0WmG','ywrKrxzLBNrmAxn0zw5LCG','Bg9NAw4TDgL0Bgu'];kh_0x1b02=function(){return _0x47c42b;};return kh_0x1b02();}get('back-to-directory')[kh_0x1e0eb9(0x172)]=closeProfile,get(kh_0x1e0eb9(0x137))[kh_0x1e0eb9(0x172)]=()=>openStudent(profileStudent),studentSearch[kh_0x1e0eb9(0x18f)]=renderStudents,studentGroup[kh_0x1e0eb9(0x13a)]=renderStudents,studentState[kh_0x1e0eb9(0x13a)]=renderStudents,get('add-student')[kh_0x1e0eb9(0x172)]=()=>{if(isAdmin())openStudent();},studentEditor[kh_0x1e0eb9(0x1f2)](kh_0x1e0eb9(0x1d1),resetStudent);const loginDojo=get(kh_0x1e0eb9(0x16d)),portalAccess=get('portal-access');let controlAccess=new URLSearchParams(location['search'])[kh_0x1e0eb9(0x20f)](kh_0x1e0eb9(0x126))===kh_0x1e0eb9(0x1e1);function syncPortalAccess(){const _0x3754e0=kh_0x1e0eb9;portalAccess['textContent']=controlAccess?_0x3754e0(0x15f):_0x3754e0(0x11f),portalAccess['href']=controlAccess?location[_0x3754e0(0x1d9)]:_0x3754e0(0x1b5);const _0x503387=loginDojo[_0x3754e0(0x1a6)][0x2];_0x503387[_0x3754e0(0x1a7)]=!controlAccess;if(!controlAccess&&loginDojo[_0x3754e0(0x132)]==='Tineo\x20Dojo')loginDojo['value']='';showLoginStep(![]);}portalAccess['onclick']=_0x5a3fa3=>{const _0x373563=kh_0x1e0eb9;if(_0x5a3fa3[_0x373563(0x1a0)]||_0x5a3fa3['metaKey']||_0x5a3fa3[_0x373563(0x203)]||_0x5a3fa3['altKey'])return;_0x5a3fa3[_0x373563(0x198)](),history[_0x373563(0x1c9)](null,'',portalAccess['href']),controlAccess=!controlAccess,get('login-form')[_0x373563(0x1b4)](),syncPortalAccess();};function showLoginStep(_0x1d22a8){const _0x5a1b64=kh_0x1e0eb9;get('dojo-picker-art')[_0x5a1b64(0x1a7)]=_0x1d22a8,get(_0x5a1b64(0x157))['classList'][_0x5a1b64(0x14a)](_0x5a1b64(0x149),!_0x1d22a8),get(_0x5a1b64(0x1cf))[_0x5a1b64(0x1a7)]=_0x1d22a8,get(_0x5a1b64(0x117))[_0x5a1b64(0x1a7)]=!_0x1d22a8;const _0x50ba4b=loginDojo[_0x5a1b64(0x132)]==='Tineo\x20Dojo';get(_0x5a1b64(0x133))[_0x5a1b64(0x1a7)]=!_0x1d22a8||_0x50ba4b,get(_0x5a1b64(0x14f))[_0x5a1b64(0x1a7)]=!_0x1d22a8||!_0x50ba4b,get(_0x5a1b64(0x1f3))['textContent']=controlAccess?_0x1d22a8?_0x5a1b64(0x143):_0x5a1b64(0x139):_0x1d22a8?_0x5a1b64(0x136):'Elige\x20tu\x20dojo',get(_0x5a1b64(0x1ab))[_0x5a1b64(0x1c4)]='',get(_0x5a1b64(0x146))['disabled']=!loginDojo['value'],_0x1d22a8&&(get(_0x5a1b64(0x180))[_0x5a1b64(0x1c4)]=loginDojo[_0x5a1b64(0x132)],get('login-form')['elements'][_0x5a1b64(0x17b)][_0x5a1b64(0x1db)]());}syncPortalAccess(),loginDojo[kh_0x1e0eb9(0x13a)]=()=>{const _0x2f89a6=kh_0x1e0eb9;get(_0x2f89a6(0x146))[_0x2f89a6(0x173)]=!loginDojo[_0x2f89a6(0x132)];},get('login-next')['onclick']=()=>{if(loginDojo['value'])showLoginStep(!![]);},get(kh_0x1e0eb9(0x153))[kh_0x1e0eb9(0x172)]=()=>{const _0x4fd4d1=kh_0x1e0eb9;get(_0x4fd4d1(0x117))[_0x4fd4d1(0x1b4)](),showLoginStep(![]),loginDojo[_0x4fd4d1(0x1db)]();},get(kh_0x1e0eb9(0x117))[kh_0x1e0eb9(0x199)]=_0x1b374f=>{const _0x18054f=kh_0x1e0eb9;_0x1b374f['preventDefault']();if(!loginDojo[_0x18054f(0x132)]||get('login-form')[_0x18054f(0x1a7)])return;const _0x519aac=new FormData(_0x1b374f[_0x18054f(0x111)]),_0x9fef24=_0x519aac[_0x18054f(0x20f)](_0x18054f(0x17b))[_0x18054f(0x19b)]()[_0x18054f(0x190)](),_0x4d70ea=accountRoles(),_0x54bab5=dojoStore[_0x18054f(0x192)]===_0x18054f(0x118)&&kosServer['session']?.[_0x18054f(0x17b)]===_0x9fef24;if(_0x54bab5)_0x4d70ea[_0x9fef24]=kosServer[_0x18054f(0x15a)][kosServer['session'][_0x18054f(0x129)]];const _0x56b689=loginDojo[_0x18054f(0x132)]===_0x18054f(0x191);if(_0x56b689&&controlAccess&&_0x9fef24===_0x18054f(0x16f)&&_0x519aac['get'](_0x18054f(0x13b))===_0x18054f(0x188)){activeRole=_0x18054f(0x1c5),activeEmail=_0x9fef24,_0x1b374f[_0x18054f(0x111)][_0x18054f(0x1b4)](),get(_0x18054f(0x157))['hidden']=!![],get('portal')['hidden']=![],portalAccess[_0x18054f(0x1a7)]=!![],get(_0x18054f(0x129))[_0x18054f(0x1c4)]=_0x18054f(0x1c5),get(_0x18054f(0x18c))[_0x18054f(0x1c4)]=_0x18054f(0x16a),get(_0x18054f(0x13e))[_0x18054f(0x1a7)]=!![];for(const _0x1465e9 of tabs)_0x1465e9[_0x18054f(0x1a7)]=_0x1465e9['dataset']['panel']!==_0x18054f(0x12c);show(_0x18054f(0x12c)),get('portal-title')[_0x18054f(0x1db)]();return;}if(_0x56b689||!_0x4d70ea[_0x9fef24]||!_0x54bab5&&_0x519aac[_0x18054f(0x20f)](_0x18054f(0x13b))!==_0x18054f(0x188)){get(_0x18054f(0x1ab))['textContent']='Revisa\x20el\x20correo\x20y\x20la\x20contraseña\x20de\x20prueba.';return;}if(_0x4d70ea[_0x9fef24]!==_0x18054f(0x1fb)!==controlAccess){get(_0x18054f(0x1ab))[_0x18054f(0x1c4)]=controlAccess?_0x18054f(0x1d6):_0x18054f(0x128);return;}if(_0x4d70ea[_0x9fef24]===_0x18054f(0x1fb)&&!canUseStudentAccount(learnerByEmail(_0x9fef24))){get(_0x18054f(0x1ab))[_0x18054f(0x1c4)]=_0x18054f(0x17c);return;}get('exam-simulation')[_0x18054f(0x1a7)]=![],activeRole=_0x4d70ea[_0x9fef24],activeEmail=_0x9fef24,get(_0x18054f(0x1fc))[_0x18054f(0x1a7)]=!isAdmin(),get('role')['textContent']=activeRole===_0x18054f(0x1fb)&&currentLearner()?.[_0x18054f(0x18e)]?_0x18054f(0x1d5):activeRole==='Alumno'&&learnerReadOnly(currentLearner())?'Alumno\x20·\x20Solo\x20lectura':activeRole,get(_0x18054f(0x1ab))[_0x18054f(0x1c4)]='',_0x1b374f['currentTarget'][_0x18054f(0x1b4)](),get(_0x18054f(0x157))[_0x18054f(0x1a7)]=!![],get(_0x18054f(0x1ee))['hidden']=![],portalAccess[_0x18054f(0x1a7)]=!![],get(_0x18054f(0x1ee))[_0x18054f(0x18d)][_0x18054f(0x14a)](_0x18054f(0x20b),controlAccess),get(_0x18054f(0x18c))[_0x18054f(0x1c4)]=controlAccess?_0x18054f(0x20d)+loginDojo[_0x18054f(0x132)]:loginDojo[_0x18054f(0x132)];for(const _0x12012f of tabs)_0x12012f[_0x18054f(0x1a7)]=activeRole==='Recepción'?receptionHidden[_0x18054f(0x148)](_0x12012f['dataset'][_0x18054f(0x152)]):activeRole!==_0x18054f(0x19e)&&![_0x18054f(0x20e),_0x18054f(0x183),'schedule',_0x18054f(0x1b3),_0x18054f(0x204)][_0x18054f(0x148)](_0x12012f['dataset'][_0x18054f(0x152)]);if(activeRole===_0x18054f(0x1fb)){const _0x43d6cb=currentLearner(),_0x2b941e=learnerReadOnly(_0x43d6cb);for(const _0x5b08a1 of tabs)_0x5b08a1['hidden']=_0x2b941e||_0x5b08a1[_0x18054f(0x10c)]['panel']!==_0x18054f(0x20e);get(_0x18054f(0x1d8))[_0x18054f(0x1a7)]=!![],get('add-student')[_0x18054f(0x1a7)]=!![],show(_0x18054f(0x20e));if(_0x2b941e)get('students')[_0x18054f(0x1a7)]=![];}else get(_0x18054f(0x169))['hidden']=!isAdmin(),renderStudents(),show(_0x18054f(0x20e));refreshIfkPending();isAdmin()&&sessionStorage[_0x18054f(0x12f)]('karate-os.ifk-review')==='1'&&(sessionStorage[_0x18054f(0x202)](_0x18054f(0x1a3)),show(_0x18054f(0x12c)));document['querySelector'](_0x18054f(0x12e))['textContent']=activeRole===_0x18054f(0x1fb)?currentLearner()?.[_0x18054f(0x18e)]?_0x18054f(0x16b):'Mis\x20logros':'Alumnos';if(activeRole===_0x18054f(0x1fb))openProfile(currentLearner());else get(_0x18054f(0x18c))[_0x18054f(0x1db)]();};for(const tab of tabs)tab['onclick']=()=>show(tab[kh_0x1e0eb9(0x10c)][kh_0x1e0eb9(0x152)]);get(kh_0x1e0eb9(0x207))['onclick']=()=>{const _0x11e5bb=kh_0x1e0eb9;closeProfile(),activeRole='',activeEmail='',resetStudent(),get(_0x11e5bb(0x140))[_0x11e5bb(0x1b4)](),get(_0x11e5bb(0x151))?.['reset'](),get(_0x11e5bb(0x1ee))[_0x11e5bb(0x1a7)]=!![],get('login')['hidden']=![],portalAccess['hidden']=![],loginDojo[_0x11e5bb(0x132)]='',showLoginStep(![]),loginDojo[_0x11e5bb(0x1db)]();},get(kh_0x1e0eb9(0x13d))[kh_0x1e0eb9(0x172)]=()=>studentEditor[kh_0x1e0eb9(0x1d1)](),studentForm[kh_0x1e0eb9(0x199)]=_0x68dc23=>{const _0xe6c71b=kh_0x1e0eb9;_0x68dc23['preventDefault']();if(!isAdmin())return;const _0x381c0c=new FormData(studentForm),_0x392980=_0x381c0c[_0xe6c71b(0x206)](_0xe6c71b(0x1c0)),_0x4fa845=classDayError(_0x392980,_0x381c0c[_0xe6c71b(0x20f)](_0xe6c71b(0x10b)),_0x381c0c[_0xe6c71b(0x20f)]('plan'));get(_0xe6c71b(0x18b))[_0xe6c71b(0x1c4)]=_0x4fa845;if(_0x4fa845)return;_0x381c0c[_0xe6c71b(0x164)](_0xe6c71b(0x1c0));const _0x47835a=_0x381c0c[_0xe6c71b(0x20f)](_0xe6c71b(0x1b2));_0x381c0c[_0xe6c71b(0x164)](_0xe6c71b(0x1b2));const _0x21fa76=Object['fromEntries']([..._0x381c0c][_0xe6c71b(0x1f5)](([_0x11f254,_0x1265aa])=>[_0x11f254,_0x1265aa[_0xe6c71b(0x19b)]()]));_0x21fa76[_0xe6c71b(0x184)]=_0x381c0c['has'](_0xe6c71b(0x184)),_0x21fa76[_0xe6c71b(0x1d2)]=_0x381c0c[_0xe6c71b(0x112)](_0xe6c71b(0x1d2)),_0x21fa76[_0xe6c71b(0x1a1)]=_0x381c0c['has'](_0xe6c71b(0x1a1)),_0x21fa76['docId']=normalizeDocId(_0x21fa76[_0xe6c71b(0x1c2)]),_0x21fa76['fullName']=joinName(_0x21fa76[_0xe6c71b(0x130)],_0x21fa76[_0xe6c71b(0x100)]),_0x21fa76[_0xe6c71b(0x208)]=_0x21fa76['familyCode'][_0xe6c71b(0x19b)]()[_0xe6c71b(0x209)]();if(_0x21fa76['iban'])_0x21fa76[_0xe6c71b(0x1ec)]=normalizeIban(_0x21fa76[_0xe6c71b(0x1ec)]);if(!_0x21fa76[_0xe6c71b(0x1ba)]){status('Introduce\x20el\x20nombre\x20completo.');return;}if(!editing&&!_0x21fa76[_0xe6c71b(0x1e8)])_0x21fa76[_0xe6c71b(0x1e8)]=todayInMadrid();const _0x4e6466=editing??{'id':nextId++};if(_0x21fa76[_0xe6c71b(0x1a4)]!==_0xe6c71b(0x1e6)){for(const _0x5ed1ce of get(_0xe6c71b(0x142))[_0xe6c71b(0x1d7)](_0xe6c71b(0x1e9)))delete _0x4e6466[_0x5ed1ce['name']];}if(_0x4e6466[_0xe6c71b(0x10b)]!==_0x21fa76[_0xe6c71b(0x10b)])delete _0x4e6466[_0xe6c71b(0x1c1)];if(_0x392980[_0xe6c71b(0x170)]||_0x4e6466[_0xe6c71b(0x1c1)])_0x4e6466[_0xe6c71b(0x1c1)]=_0x392980;Object[_0xe6c71b(0x131)](_0x4e6466,_0x21fa76);if(_0x47835a[_0xe6c71b(0x17e)]){if(_0x4e6466[_0xe6c71b(0x1b2)])URL[_0xe6c71b(0x1e2)](_0x4e6466[_0xe6c71b(0x1b2)]);_0x4e6466[_0xe6c71b(0x1b2)]=URL['createObjectURL'](_0x47835a);}if(!editing)students['push'](_0x4e6466);studentEditor[_0xe6c71b(0x1d1)](),studentSearch[_0xe6c71b(0x132)]='',studentGroup['value']='',studentState['value']='',renderStudents(),document[_0xe6c71b(0x161)](new Event(_0xe6c71b(0x147))),openProfile(_0x4e6466),status(_0xe6c71b(0x1b6));},get(kh_0x1e0eb9(0x140))[kh_0x1e0eb9(0x199)]=_0x46470f=>{const _0xf5d161=kh_0x1e0eb9;_0x46470f['preventDefault']();if(activeRole!==_0xf5d161(0x19e))return;const _0xc539cc=new FormData(_0x46470f[_0xf5d161(0x111)]),_0x51f98e=_0xc539cc['get'](_0xf5d161(0x17b))[_0xf5d161(0x19b)]()[_0xf5d161(0x190)](),_0xf209a4=_0xc539cc[_0xf5d161(0x20f)]('role'),_0xc68365=students['find'](_0x40b4b8=>_0x40b4b8['id']===Number(_0xc539cc[_0xf5d161(0x20f)](_0xf5d161(0x1be))));if(_0xf209a4['startsWith']('Alumno')&&!_0xc68365){status(_0xf5d161(0x122));return;}if(_0xf209a4[_0xf5d161(0x1fd)]('Alumno')&&!canUseStudentAccount(_0xc68365)){status(_0xf5d161(0x115));return;}if(accounts[_0xf5d161(0x148)](_0x51f98e)||[_0xf5d161(0x11e),'profe@example.com'][_0xf5d161(0x148)](_0x51f98e)){status('Ese\x20correo\x20ya\x20está\x20registrado.');return;}accounts[_0xf5d161(0x1d0)](_0x51f98e);const _0x2ccb0e=document[_0xf5d161(0x1ac)]('li');_0x2ccb0e[_0xf5d161(0x1c4)]=[_0x51f98e,_0xf209a4,_0xc68365?.['fullName'],_0xf209a4['startsWith']('Alumno')&&learnerReadOnly(_0xc68365)?_0xf5d161(0x10d):_0xf5d161(0x18a)]['filter'](Boolean)['join'](_0xf5d161(0x185)),get(_0xf5d161(0x163))['append'](_0x2ccb0e),_0x46470f[_0xf5d161(0x111)][_0xf5d161(0x1b4)](),status(_0xf5d161(0x124));},get(kh_0x1e0eb9(0x151))['onsubmit']=_0x4aacb8=>{const _0x49d6b0=kh_0x1e0eb9;_0x4aacb8[_0x49d6b0(0x198)]();if(!activeRole)return;const _0x25aaa9=new FormData(_0x4aacb8['currentTarget']),_0x495d98=_0x25aaa9[_0x49d6b0(0x20f)](_0x49d6b0(0x1b7));if(!_0x495d98[_0x49d6b0(0x1e4)])return;const _0x4bcba2=document[_0x49d6b0(0x1ac)]('a');_0x4bcba2[_0x49d6b0(0x1d4)]=URL[_0x49d6b0(0x14b)](_0x495d98),_0x4bcba2['download']=_0x495d98[_0x49d6b0(0x1e4)],_0x4bcba2[_0x49d6b0(0x1c4)]=_0x495d98[_0x49d6b0(0x1e4)];const _0x44a334=document[_0x49d6b0(0x1ac)]('li');_0x44a334[_0x49d6b0(0x121)](_0x4bcba2,_0x49d6b0(0x185)+[_0x25aaa9[_0x49d6b0(0x20f)](_0x49d6b0(0x138))[_0x49d6b0(0x19b)](),activeEmail]['filter'](Boolean)[_0x49d6b0(0x1e7)]('\x20·\x20')),get(_0x49d6b0(0x103))[_0x49d6b0(0x121)](_0x44a334),_0x4aacb8[_0x49d6b0(0x111)][_0x49d6b0(0x1b4)](),status(_0x49d6b0(0x166));};</script>
+<script src="management.js?v=recepcion3"></script>
+<script src="dojo-settings.js?v=store"></script>
+<script src="enrollment.js?v=recepcion1"></script>
+<script src="student-profile.js?v=ficha"></script>
+<script src="learner.js?v=recepcion3"></script>
+<script src="attendance-qr.js?v=recepcion2"></script>
+<script src="federative-events.js?v=store"></script>
+<div id="roster-print-paper"></div>
+<dialog id="roster-dialog" aria-labelledby="roster-review-title">
+<h2 id="roster-review-title">Revisar importación del Excel</h2>
+<p id="roster-summary"></p>
+<p id="roster-ignored" class="roster-note"></p>
+<ul id="roster-preview"></ul>
+<h3 id="roster-errors-title" hidden>Filas con errores</h3>
+<ul id="roster-errors"></ul>
+<div class="achievement-actions"><button id="roster-confirm" class="primary" type="button">Actualizar fichas</button>
+<form method="dialog"><button>Cancelar</button></form></div>
+</dialog>
+<script src="student-spreadsheet.js?v=exento"></script>
+<script src="control-home.js?v=video"></script>
+<script src="exam-call.js?v=recepcion3"></script>
+<script src="fees-month.js?v=video"></script>
+<script src="accounts.js?v=recepcion3"></script>
+<script src="tutors.js?v=recepcion2"></script>
+<script src="requests-store.js?v=rapido3"></script>
+<script src="activity-store.js?v=rapido3"></script>
+<script src="attendance-grid.js?v=rapido3"></script>
+<script src="notices.js?v=recepcion1"></script>
+<script src="licenses-batch.js?v=store"></script>
+<script src="reports.js?v=rapido3"></script>
+<script src="teachers.js?v=rapido3"></script>
+<script src="dojo-files.js?v=store"></script>
+<script src="questions-inbox.js?v=recepcion3"></script>
+<script src="annual-fee.js?v=recepcion3"></script>
+<script src="cash-day.js?v=video"></script>
+<script src="shop.js?v=tienda"></script>
+<script src="fee-reminders.js?v=recordar"></script>
+<script src="provider.js?v=4"></script>
+<script src="support-access.js?v=2"></script>
+<dialog id="remittance-dialog" aria-labelledby="remittance-title">
+<h2 id="remittance-title">Preparar cobro del mes</h2>
+<label>Mes de las cuotas<input id="remittance-month" type="month" required></label>
+<p id="remittance-total" role="status"></p>
+<ul id="remittance-ready" aria-label="Recibos listos"></ul>
+<h3>Recibos que requieren revisión</h3>
+<ul id="remittance-review"></ul>
+<details id="remittance-settings">
+<summary>Datos de cobro</summary>
+<label>Fecha prevista de cargo<input id="remittance-date" type="date"></label>
+<label>Titular de la cuenta del dojo<input id="remittance-name" maxlength="70"></label>
+<label>IBAN del dojo<input id="remittance-iban" maxlength="42" autocomplete="off"></label>
+<label>Identificador SEPA del acreedor<input id="remittance-creditor" maxlength="35" autocomplete="off"></label>
+</details>
+<p>Usa datos ficticios en la demo. El fichero debe validarse con el banco antes de usarlo en producción.</p>
+<p id="remittance-feedback" role="status"></p>
+<div class="achievement-actions">
+<button id="remittance-export" class="primary" type="button" disabled>Descargar remesa SEPA</button>
+<button id="remittance-example" type="button">Probar con un ejemplo</button>
+<form method="dialog"><button>Cerrar</button></form>
+</div>
+</dialog>
+<script src="remittance.js?v=recepcion3"></script>
+<script>function ki_0x57d9(_0x4f6e9f,_0x2abec4){_0x4f6e9f=_0x4f6e9f-0x12d;var _0x492ce8=ki_0x492c();var _0x57d9ea=_0x492ce8[_0x4f6e9f];if(ki_0x57d9['rjjjVv']===undefined){var _0x148fc8=function(_0x2d1f7c){var _0x481edd='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';var _0x2dbe0c='',_0x5b3502='';for(var _0x5bf6db=0x0,_0x2a9cf5,_0x50186e,_0x540238=0x0;_0x50186e=_0x2d1f7c['charAt'](_0x540238++);~_0x50186e&&(_0x2a9cf5=_0x5bf6db%0x4?_0x2a9cf5*0x40+_0x50186e:_0x50186e,_0x5bf6db++%0x4)?_0x2dbe0c+=String['fromCharCode'](0xff&_0x2a9cf5>>(-0x2*_0x5bf6db&0x6)):0x0){_0x50186e=_0x481edd['indexOf'](_0x50186e);}for(var _0x4cfe09=0x0,_0x193143=_0x2dbe0c['length'];_0x4cfe09<_0x193143;_0x4cfe09++){_0x5b3502+='%'+('00'+_0x2dbe0c['charCodeAt'](_0x4cfe09)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(_0x5b3502);};ki_0x57d9['SlNtpr']=_0x148fc8,ki_0x57d9['LvMiEr']={},ki_0x57d9['rjjjVv']=!![];}var _0x34d612=_0x492ce8[0x0],_0x28d08e=_0x4f6e9f+_0x34d612,_0x1dde01=ki_0x57d9['LvMiEr'][_0x28d08e];return!_0x1dde01?(_0x57d9ea=ki_0x57d9['SlNtpr'](_0x57d9ea),ki_0x57d9['LvMiEr'][_0x28d08e]=_0x57d9ea):_0x57d9ea=_0x1dde01,_0x57d9ea;}var ki_0x299edb=ki_0x57d9;function ki_0x492c(){var _0x3adce0=['AhjLzG','otCWndG2r2vAuK1R','odK0oxLrtvzAtG','mJjnvu1KDwK','ndq3mLniuvbHra','zgvTBY1YzxnLDa','Cgf0Ag5HBwu','mte4ntfNwM1KCuu','nduYnZmYvMDyA3Lo','WR9szwLUAwnPyxiGBgeGzgvTBZ8Gu2uGyM9YCMfYW6fUigXVCYbHBhvTBM9ZlcbJB252B2nHDg9YAwfZlcbOB3jHCMLVCYb5ignHBwjPB3mGz3vHCMrHzg9ZigvUigvZDguGBMf2zwDHzg9YlG','y2XLyxjbBgW','ntG4mtqXmfj2shrMAq','nJGWnwLXyxfAta','B25JBgLJAW','nJyYrevvtKXH','odCXnde5mfPSCen0DW','z2v0rwXLBwvUDej5swq','mZe4nLfzzKrTqq'];ki_0x492c=function(){return _0x3adce0;};return ki_0x492c();}(function(_0x4c0a79,_0xd8583b){var _0x5b4a19=ki_0x57d9,_0x4f2d83=_0x4c0a79();while(!![]){try{var _0x50ecb5=parseInt(_0x5b4a19(0x13b))/0x1+-parseInt(_0x5b4a19(0x136))/0x2*(-parseInt(_0x5b4a19(0x13c))/0x3)+-parseInt(_0x5b4a19(0x130))/0x4+parseInt(_0x5b4a19(0x134))/0x5*(parseInt(_0x5b4a19(0x139))/0x6)+-parseInt(_0x5b4a19(0x12f))/0x7*(parseInt(_0x5b4a19(0x13e))/0x8)+parseInt(_0x5b4a19(0x133))/0x9+-parseInt(_0x5b4a19(0x137))/0xa*(parseInt(_0x5b4a19(0x13d))/0xb);if(_0x50ecb5===_0xd8583b)break;else _0x4f2d83['push'](_0x4f2d83['shift']());}catch(_0x466cda){_0x4f2d83['push'](_0x4f2d83['shift']());}}}(ki_0x492c,0x81cb0),document[ki_0x299edb(0x138)](ki_0x299edb(0x12d))[ki_0x299edb(0x135)]=()=>{var _0x5783d1=ki_0x299edb;if(!window['confirm'](_0x5783d1(0x131)))return;dojoStore[_0x5783d1(0x132)](),location[_0x5783d1(0x13a)]=location[_0x5783d1(0x12e)]+location['search'];});</script>
+<script>var kj_0x23d014=kj_0x3898;function kj_0x3898(_0x129a96,_0x24d6cb){_0x129a96=_0x129a96-0x1ce;var _0x12c50b=kj_0x12c5();var _0x38983b=_0x12c50b[_0x129a96];if(kj_0x3898['MMdWEA']===undefined){var _0x377d1d=function(_0x1b3f50){var _0x63c7a0='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';var _0x467db3='',_0xfda8b9='';for(var _0x34bed8=0x0,_0xe30cd7,_0x5ae020,_0x300a49=0x0;_0x5ae020=_0x1b3f50['charAt'](_0x300a49++);~_0x5ae020&&(_0xe30cd7=_0x34bed8%0x4?_0xe30cd7*0x40+_0x5ae020:_0x5ae020,_0x34bed8++%0x4)?_0x467db3+=String['fromCharCode'](0xff&_0xe30cd7>>(-0x2*_0x34bed8&0x6)):0x0){_0x5ae020=_0x63c7a0['indexOf'](_0x5ae020);}for(var _0x4b57e1=0x0,_0x209c3d=_0x467db3['length'];_0x4b57e1<_0x209c3d;_0x4b57e1++){_0xfda8b9+='%'+('00'+_0x467db3['charCodeAt'](_0x4b57e1)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(_0xfda8b9);};kj_0x3898['KjgEyC']=_0x377d1d,kj_0x3898['wpmbnE']={},kj_0x3898['MMdWEA']=!![];}var _0x5b50dd=_0x12c50b[0x0],_0x556356=_0x129a96+_0x5b50dd,_0x3e3a65=kj_0x3898['wpmbnE'][_0x556356];return!_0x3e3a65?(_0x38983b=kj_0x3898['KjgEyC'](_0x38983b),kj_0x3898['wpmbnE'][_0x556356]=_0x38983b):_0x38983b=_0x3e3a65,_0x38983b;}(function(_0x7beae,_0x11f75b){var _0x37df07=kj_0x3898,_0x3d30a5=_0x7beae();while(!![]){try{var _0x494465=-parseInt(_0x37df07(0x1da))/0x1+parseInt(_0x37df07(0x1cf))/0x2+-parseInt(_0x37df07(0x1ce))/0x3+parseInt(_0x37df07(0x1db))/0x4+parseInt(_0x37df07(0x1d5))/0x5+parseInt(_0x37df07(0x1d7))/0x6+parseInt(_0x37df07(0x1dc))/0x7*(parseInt(_0x37df07(0x1d0))/0x8);if(_0x494465===_0x11f75b)break;else _0x3d30a5['push'](_0x3d30a5['shift']());}catch(_0xa83210){_0x3d30a5['push'](_0x3d30a5['shift']());}}}(kj_0x12c5,0x228b3));function kj_0x12c5(){var _0x294c2b=['mtyYnJHhrhj2qM4','ntK2ndq1A1jvv3jm','nJaWmJHNyLvWzuC','mJy0u0PhBu5Q','ChjVDg9JB2W','DgvZDa','CMvNAxn0zxi','C2vYDMLJzvDVCMTLCG','mta0mZvhqKvfwxe','Bg9Hza','otG0ode2zxfxuM9M','ywrKrxzLBNrmAxn0zw5LCG','y2f0y2G','mtG4otq1vLbftu5g','mtaYnti4ofLUvxPdta'];kj_0x12c5=function(){return _0x294c2b;};return kj_0x12c5();}kj_0x23d014(0x1d4)in navigator&&/^https?:$/[kj_0x23d014(0x1d2)](location[kj_0x23d014(0x1d1)])&&window[kj_0x23d014(0x1d8)](kj_0x23d014(0x1d6),()=>navigator[kj_0x23d014(0x1d4)][kj_0x23d014(0x1d3)]('sw.js')[kj_0x23d014(0x1d9)](()=>{}));</script>
+</body>
+</html>

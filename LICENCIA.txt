@@ -1,0 +1,9 @@
+Karate OS
+© 2026 Karate OS. Todos los derechos reservados.
+
+Este programa y su código son propiedad de su titular. Se permite usar esta demostración
+para valorar Karate OS durante el periodo de prueba. No está permitido copiar, modificar,
+descompilar, hacer ingeniería inversa, redistribuir ni usar el código, el diseño o los textos
+en otros productos sin autorización escrita del titular.
+
+Contacto: rafalopez75@gmail.com
